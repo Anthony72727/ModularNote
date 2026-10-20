@@ -1,0 +1,147 @@
+# =========================================================
+#  ModularNote - .gitignore racine (Visual Studio / .NET + React / Vite)
+# =========================================================
+
+# ---------- Contexte IA local (jamais sur GitHub) ----------
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+docs-local/
+graphify-out/
+
+# ---------- Secrets / environnement ----------
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+appsettings.*.local.json
+secrets.json
+
+# =========================================================
+#  Visual Studio / .NET
+# =========================================================
+
+# Dossiers de build
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Cache / options utilisateur Visual Studio
+.vs/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Rider / VS Code (on garde les extensions recommandées)
+.idea/
+*.sln.iml
+.vscode/*
+!.vscode/extensions.json
+
+# Résultats de tests et couverture
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+TestResults/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Fichiers temporaires de compilation
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Publish
+publish/
+*.[Pp]ublish.xml
+*.azurePubxml
+*.pubxml
+*.publishproj
+PublishScripts/
+
+# Bases locales
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# =========================================================
+#  Node / React / Vite
+# =========================================================
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+.eslintcache
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================================================
+#  OS
+# =========================================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
