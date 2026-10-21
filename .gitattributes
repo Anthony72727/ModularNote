@@ -1,0 +1,17 @@
+# Fins de ligne : LF partout par défaut (cohérent avec un déploiement Linux)
+* text=auto eol=lf
+
+# Fichiers qui doivent rester en CRLF (outils Windows)
+*.sln  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binaires
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.pfx  binary
+*.dll  binary
+*.exe  binary
+*.loo  binary
