@@ -1,0 +1,67 @@
+# CI de l'API (.NET 10) : restore, build, tests.
+#
+# ⚠️ Ce workflow est filtré par `paths` : il ne tourne que si l'API change.
+# Si une branch protection exige ce check, une PR qui ne touche pas l'API
+# restera bloquée en "Expected - Waiting for status". Dans ce cas, passer à
+# un workflow unique avec dorny/paths-filter et un job de synthèse requis.
+
+name: API
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "API/**"
+      - ".github/workflows/api.yml"
+  push:
+    branches: [main]
+    paths:
+      - "API/**"
+      - ".github/workflows/api.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: API/ModularNoteAPI
+
+jobs:
+  build-and-test:
+    name: Build & tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # Pas de packages.lock.json : cache manuel du dossier NuGet, clé sur les .csproj.
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('API/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore ModularNoteAPI.slnx
+
+      - name: Build
+        run: dotnet build ModularNoteAPI.slnx --no-restore -c Release
+
+      - name: Tests
+        run: dotnet test ModularNoteAPI.slnx --no-build -c Release --logger trx --results-directory TestResults
+
+      - name: Résultats des tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: API/ModularNoteAPI/TestResults/*.trx
+          if-no-files-found: ignore

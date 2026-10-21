@@ -1,0 +1,53 @@
+# CI du front (React + Vite) : install, lint, build.
+#
+# ⚠️ Ce workflow est filtré par `paths` : il ne tourne que si le front change.
+# Si une branch protection exige ce check, une PR qui ne touche pas le front
+# restera bloquée en "Expected - Waiting for status". Dans ce cas, passer à
+# un workflow unique avec dorny/paths-filter et un job de synthèse requis.
+
+name: Front
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "FRONT/**"
+      - ".github/workflows/front.yml"
+  push:
+    branches: [main]
+    paths:
+      - "FRONT/**"
+      - ".github/workflows/front.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: FRONT/ModularNote
+
+jobs:
+  lint-and-build:
+    name: Lint & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: FRONT/ModularNote/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
