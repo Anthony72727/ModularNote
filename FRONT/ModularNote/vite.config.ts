@@ -8,4 +8,10 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  server: {
+    proxy: {
+      // En dev, /api est redirigé vers l'API locale (profil "http" de launchSettings.json)
+      '/api': 'http://localhost:5035',
+    },
+  },
 })
