@@ -1,3 +1,5 @@
+using Application.Notes.Abstractions.UseCases;
+using Application.Notes.UseCases;
 using ModularNoteAPI.ExceptionHandlers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,11 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<BusinessExceptionHandler>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Use cases
+builder.Services.AddScoped<IAddNoteUseCase, AddNoteUseCase>();
+builder.Services.AddScoped<IGetNotesUseCase, GetNotesUseCase>();
+builder.Services.AddScoped<IGetNoteByIdUseCase, GetNoteByIdUseCase>();
 
 WebApplication app = builder.Build();
 
