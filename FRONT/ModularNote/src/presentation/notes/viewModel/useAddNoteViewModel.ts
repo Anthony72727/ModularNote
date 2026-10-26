@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient, UseMutationResult } from '@tanstack/react-query'
 import type { Dependencies } from '../../../core/di/Dependencies'
 import { useDependencies } from '../../../core/di/DependenciesContext'
+import { NoteValidationError } from '../../../domain/notes/entity/errors/NoteValidationError'
+import type { NoteField } from '../../../domain/notes/entity/errors/NoteValidationError'
 import type { Note } from '../../../domain/notes/entity/models/Note'
 import { toNoteErrorMessage } from '../util/toNoteErrorMessage'
 import { noteQueryKeys } from './noteQueryKeys'
@@ -11,6 +13,7 @@ export type AddNoteViewModel = {
   title: string
   description: string
   error: string | null
+  invalidField: NoteField | null
   isSubmitting: boolean
   changeTitle: (value: string) => void
   changeDescription: (value: string) => void
@@ -77,6 +80,7 @@ export function useAddNoteViewModel(): AddNoteViewModel {
     title,
     description,
     error: addNoteMutation.isError ? toNoteErrorMessage(addNoteMutation.error) : null,
+    invalidField: addNoteMutation.error instanceof NoteValidationError ? addNoteMutation.error.field : null,
     isSubmitting: addNoteMutation.isPending,
     changeTitle,
     changeDescription,

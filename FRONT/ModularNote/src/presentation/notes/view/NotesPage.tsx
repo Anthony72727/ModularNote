@@ -26,7 +26,7 @@ export function NotesPage(): JSX.Element {
           <h2 id="notes-heading" className={styles.heading}>
             Mes idées
           </h2>
-          {!viewModel.isLoading && <span className={styles.count}>{viewModel.notes.length}</span>}
+          {!viewModel.isLoading && viewModel.loadError === null && <span className={styles.count}>{viewModel.notes.length}</span>}
         </header>
 
         <NoteList

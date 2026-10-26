@@ -14,6 +14,7 @@ export class AddNoteUseCase {
 
   /**
    * @throws NoteValidationError if the title or the description is invalid
+   * @throws NoteRejectedError if the server refuses the note
    */
   async execute(title: string, description: string | null): Promise<Note> {
     const newNote: NewNote = createNewNote(title, description)

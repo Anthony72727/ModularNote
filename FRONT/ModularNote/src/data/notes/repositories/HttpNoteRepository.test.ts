@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../../../core/http/ApiError'
 import type { HttpClient } from '../../../core/http/HttpClient'
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
+import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import type { NoteDto } from '../dtos/NoteDto'
 import { HttpNoteRepository } from './HttpNoteRepository'
 
@@ -65,5 +66,22 @@ describe('HttpNoteRepository', () => {
 
     expect(fake.post).toHaveBeenCalledExactlyOnceWith('/notes', { title: 'Titre', description: 'Desc' })
     expect(note.createdAt).toEqual(new Date('2026-10-26T10:00:00Z'))
+  })
+
+  it('add: turns a 400 into NoteRejectedError', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.post.mockRejectedValue(new ApiError(400, 'Title must be non-empty.'))
+
+    await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null })).rejects.toBeInstanceOf(
+      NoteRejectedError,
+    )
+  })
+
+  it('add: lets the other errors go through', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    const failure = new ApiError(500, 'boom')
+    fake.post.mockRejectedValue(failure)
+
+    await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null })).rejects.toBe(failure)
   })
 })

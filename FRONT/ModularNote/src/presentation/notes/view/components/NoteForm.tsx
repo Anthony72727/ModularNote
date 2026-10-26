@@ -26,7 +26,7 @@ export function NoteForm(): JSX.Element {
         onChange={viewModel.changeTitle}
         maxLength={NOTE_TITLE_MAX_LENGTH}
         placeholder="Une idée en quelques mots"
-        invalid={viewModel.error !== null}
+        invalid={viewModel.invalidField === 'title'}
       />
       <TextField
         label="Description"
@@ -35,6 +35,7 @@ export function NoteForm(): JSX.Element {
         onChange={viewModel.changeDescription}
         maxLength={NOTE_DESCRIPTION_MAX_LENGTH}
         placeholder="Détaille ton idée…"
+        invalid={viewModel.invalidField === 'description'}
         multiline
       />
       {viewModel.error !== null && <ErrorMessage>{viewModel.error}</ErrorMessage>}

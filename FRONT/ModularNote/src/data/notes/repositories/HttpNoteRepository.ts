@@ -1,6 +1,7 @@
 import { ApiError } from '../../../core/http/ApiError'
 import type { HttpClient } from '../../../core/http/HttpClient'
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
+import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import type { NewNote, Note } from '../../../domain/notes/entity/models/Note'
 import type { NoteRepository } from '../../../domain/notes/repositories/NoteRepository'
 import type { AddNoteRequestDto } from '../dtos/AddNoteRequestDto'
@@ -36,7 +37,14 @@ export class HttpNoteRepository implements NoteRepository {
   }
 
   async add(note: NewNote): Promise<Note> {
-    const dto: NoteDto = await this.httpClient.post<NoteDto, AddNoteRequestDto>('/notes', toAddNoteRequestDto(note))
-    return toNote(dto)
+    try {
+      const dto: NoteDto = await this.httpClient.post<NoteDto, AddNoteRequestDto>('/notes', toAddNoteRequestDto(note))
+      return toNote(dto)
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 400) {
+        throw new NoteRejectedError()
+      }
+      throw error
+    }
   }
 }

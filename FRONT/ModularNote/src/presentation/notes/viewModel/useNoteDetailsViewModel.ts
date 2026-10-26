@@ -11,7 +11,6 @@ const MAX_RETRIES: number = 3
 
 export type NoteDetailsViewModel = {
   note: Note | null
-  isLoading: boolean
   error: string | null
 }
 
@@ -33,7 +32,6 @@ export function useNoteDetailsViewModel(noteId: string): NoteDetailsViewModel {
 
   return {
     note: noteQuery.data ?? null,
-    isLoading: noteQuery.isPending,
     error: noteQuery.isError ? toNoteErrorMessage(noteQuery.error) : null,
   }
 }

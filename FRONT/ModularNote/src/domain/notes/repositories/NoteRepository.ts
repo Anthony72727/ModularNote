@@ -11,5 +11,8 @@ export interface NoteRepository {
    */
   getById(id: string, signal?: AbortSignal): Promise<Note>
 
+  /**
+   * @throws NoteRejectedError if the server refuses the note
+   */
   add(note: NewNote): Promise<Note>
 }
