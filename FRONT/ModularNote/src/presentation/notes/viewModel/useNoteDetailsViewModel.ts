@@ -7,6 +7,9 @@ import type { Note } from '../../../domain/notes/entity/models/Note'
 import { toNoteErrorMessage } from '../util/toNoteErrorMessage'
 import { noteQueryKeys } from './noteQueryKeys'
 
+/**
+ * Number of new attempts after a failure (a missing note is never retried)
+ */
 const MAX_RETRIES: number = 3
 
 export type NoteDetailsViewModel = {

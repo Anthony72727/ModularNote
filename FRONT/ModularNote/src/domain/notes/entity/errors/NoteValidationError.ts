@@ -1,3 +1,6 @@
+/**
+ * Field of a note that a validation rule applies to
+ */
 export type NoteField = 'title' | 'description'
 
 /**

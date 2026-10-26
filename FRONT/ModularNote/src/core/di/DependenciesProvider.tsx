@@ -7,6 +7,9 @@ type DependenciesProviderProps = {
   children: ReactNode
 }
 
+/**
+ * Make the use cases available to every ViewModel under it
+ */
 export function DependenciesProvider({ dependencies, children }: DependenciesProviderProps): JSX.Element {
   return <DependenciesContext value={dependencies}>{children}</DependenciesContext>
 }

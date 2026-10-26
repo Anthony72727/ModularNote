@@ -12,6 +12,9 @@ export type FakeNoteRepository = {
   add: Mock<(note: NewNote) => Promise<Note>>
 } & NoteRepository
 
+/**
+ * Create a repository whose methods return nothing until a test sets their result
+ */
 export function createFakeNoteRepository(): FakeNoteRepository {
   return {
     getAll: vi.fn<(signal?: AbortSignal) => Promise<Note[]>>(),
@@ -20,6 +23,9 @@ export function createFakeNoteRepository(): FakeNoteRepository {
   }
 }
 
+/**
+ * Build a saved note for the tests, with only the fields that matter overridden
+ */
 export function aNote(overrides: Partial<Note> = {}): Note {
   return {
     id: '0199f0c2-0000-7000-8000-000000000001',

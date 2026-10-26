@@ -12,7 +12,9 @@ import { noteQueryKeys } from './noteQueryKeys'
 export type AddNoteViewModel = {
   title: string
   description: string
+  /** Message to show to the user, null when there is no error */
   error: string | null
+  /** Field to highlight, null when the error is not about a specific field */
   invalidField: NoteField | null
   isSubmitting: boolean
   changeTitle: (value: string) => void
@@ -20,6 +22,9 @@ export type AddNoteViewModel = {
   submit: () => void
 }
 
+/**
+ * Raw values of the form, validated by the use case
+ */
 type AddNoteInput = {
   title: string
   description: string

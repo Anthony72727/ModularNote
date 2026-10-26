@@ -2,6 +2,9 @@ import { createContext, use } from 'react'
 import type { Context } from 'react'
 import type { Dependencies } from './Dependencies'
 
+/**
+ * React context that carries the use cases (null outside a DependenciesProvider)
+ */
 export const DependenciesContext: Context<Dependencies | null> = createContext<Dependencies | null>(null)
 
 /**

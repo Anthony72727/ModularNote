@@ -21,6 +21,9 @@ function scrollIntoView(element: HTMLButtonElement | null): void {
   element?.scrollIntoView({ block: 'nearest' })
 }
 
+/**
+ * List of the notes, with its loading, error and empty states; a click on a note toggles its details
+ */
 export function NoteList({ notes, isLoading, loadError, selectedNoteId, onSelect, onRetry }: NoteListProps): JSX.Element {
   if (isLoading) {
     return <p className={styles.state}>Chargement des idées…</p>

@@ -20,10 +20,18 @@ export class HttpClient {
     this.baseUrl = baseUrl
   }
 
+  /**
+   * Send a GET request and return the JSON body
+   * @throws ApiError if the status is not 2xx
+   */
   get<TResponse>(path: string, signal?: AbortSignal): Promise<TResponse> {
     return this.send<TResponse>('GET', path, undefined, signal)
   }
 
+  /**
+   * Send a POST request with a JSON body and return the JSON response
+   * @throws ApiError if the status is not 2xx
+   */
   post<TResponse, TBody>(path: string, body: TBody, signal?: AbortSignal): Promise<TResponse> {
     return this.send<TResponse>('POST', path, body, signal)
   }
@@ -51,6 +59,9 @@ export class HttpClient {
     return (await response.json()) as TResponse
   }
 
+  /**
+   * Build an ApiError from the ProblemDetails body, or from the status text if there is none
+   */
   private static async toApiError(response: Response): Promise<ApiError> {
     let message: string = response.statusText || `HTTP error ${response.status}`
     try {

@@ -11,6 +11,7 @@ export type NotesViewModel = {
   notes: Note[]
   isLoading: boolean
   loadError: string | null
+  /** Note whose details are open, null when the panel is closed */
   selectedNoteId: string | null
   retry: () => void
   toggleNote: (id: string) => void
