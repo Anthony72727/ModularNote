@@ -1,5 +1,6 @@
 using Application.Notes.Abstractions.UseCases;
 using Application.Notes.UseCases;
+using Infrastructure;
 using ModularNoteAPI.ExceptionHandlers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,13 @@ builder.Services.AddScoped<IAddNoteUseCase, AddNoteUseCase>();
 builder.Services.AddScoped<IGetNotesUseCase, GetNotesUseCase>();
 builder.Services.AddScoped<IGetNoteByIdUseCase, GetNoteByIdUseCase>();
 
+// Infrastructure (database + repositories)
+builder.Services.AddInfrastructure(builder.Configuration);
+
 WebApplication app = builder.Build();
+
+// Create / update the database schema at startup
+app.Services.ApplyMigrations();
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
