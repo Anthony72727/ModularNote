@@ -2,19 +2,32 @@ import { useId } from 'react'
 import type { ChangeEvent, JSX } from 'react'
 import styles from './TextField.module.css'
 
+/**
+ * Props of TextField
+ */
 type TextFieldProps = {
+  /** Text of the label above the field */
   label: string
+  /** Current value of the field */
   value: string
+  /** Called on every change, with the new value */
   onChange: (value: string) => void
+  /** Maximum number of characters; also shows a counter */
   maxLength?: number
+  /** True for a textarea instead of a single line input */
   multiline?: boolean
+  /** Text shown while the field is empty */
   placeholder?: string
+  /** True to show the field as invalid */
   invalid?: boolean
+  /** Small text after the label, e.g. "(facultative)" */
   hint?: string
 }
 
 /**
  * Labelled text input (or textarea when multiline), with a character counter when maxLength is set
+ * @param props - Label, value and options of the field
+ * @returns The label, the counter and the field
  */
 export function TextField({
   label,

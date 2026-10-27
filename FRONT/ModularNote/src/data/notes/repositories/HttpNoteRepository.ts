@@ -15,15 +15,21 @@ import { toAddNoteRequestDto, toNote } from '../mappers/NoteMapper'
 export class HttpNoteRepository implements NoteRepository {
   private readonly httpClient: HttpClient
 
+  /**
+   * Create the repository
+   * @param httpClient - Client that sends the requests to the API
+   */
   constructor(httpClient: HttpClient) {
     this.httpClient = httpClient
   }
 
+  /** @inheritDoc */
   async getAll(signal?: AbortSignal): Promise<Note[]> {
     const response: GetNotesResponseDto = await this.httpClient.get<GetNotesResponseDto>('/notes', signal)
     return response.notes.map(toNote)
   }
 
+  /** @inheritDoc */
   async getById(id: string, signal?: AbortSignal): Promise<Note> {
     try {
       const dto: NoteDto = await this.httpClient.get<NoteDto>(`/notes/${encodeURIComponent(id)}`, signal)
@@ -36,6 +42,7 @@ export class HttpNoteRepository implements NoteRepository {
     }
   }
 
+  /** @inheritDoc */
   async add(note: NewNote): Promise<Note> {
     try {
       const dto: NoteDto = await this.httpClient.post<NoteDto, AddNoteRequestDto>('/notes', toAddNoteRequestDto(note))

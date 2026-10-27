@@ -4,6 +4,7 @@ import { NotesPage } from './presentation/notes/view/NotesPage'
 
 /**
  * Application shell: header and main content
+ * @returns The whole page
  */
 export function App(): JSX.Element {
   return (

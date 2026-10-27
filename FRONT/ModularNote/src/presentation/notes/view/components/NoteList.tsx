@@ -5,12 +5,21 @@ import { formatDate } from '../../../core/util/formatDate'
 import type { Note } from '../../../../domain/notes/entity/models/Note'
 import styles from './NoteList.module.css'
 
+/**
+ * Props of NoteList
+ */
 type NoteListProps = {
+  /** Notes to show, in display order */
   notes: Note[]
+  /** True to show the loading state */
   isLoading: boolean
+  /** Message to show instead of the list, null when the notes were loaded */
   loadError: string | null
+  /** Note to highlight, null when none is open */
   selectedNoteId: string | null
+  /** Called when the user clicks a note, with its id */
   onSelect: (id: string) => void
+  /** Called when the user asks to load the notes again */
   onRetry: () => void
 }
 
@@ -23,6 +32,8 @@ function scrollIntoView(element: HTMLButtonElement | null): void {
 
 /**
  * List of the notes, with its loading, error and empty states; a click on a note toggles its details
+ * @param props - The notes, their state and what to do on a click
+ * @returns The list, or the state to show instead
  */
 export function NoteList({ notes, isLoading, loadError, selectedNoteId, onSelect, onRetry }: NoteListProps): JSX.Element {
   if (isLoading) {

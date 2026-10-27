@@ -9,6 +9,8 @@ export const DependenciesContext: Context<Dependencies | null> = createContext<D
 
 /**
  * Give access to the use cases from a ViewModel
+ * @returns The use cases given to the closest DependenciesProvider
+ * @throws Error if there is no DependenciesProvider above the component
  */
 export function useDependencies(): Dependencies {
   const dependencies: Dependencies | null = use(DependenciesContext)

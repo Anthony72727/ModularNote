@@ -6,6 +6,8 @@ import { NOTE_DESCRIPTION_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from '../../../dom
 
 /**
  * Translate an error thrown by a notes use case into a message for the user
+ * @param error - Error thrown by a use case, of any type
+ * @returns A message in French that tells the user what happened
  */
 export function toNoteErrorMessage(error: unknown): string {
   if (error instanceof NoteValidationError) {

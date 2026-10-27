@@ -1,5 +1,10 @@
+/**
+ * Shape of noteQueryKeys
+ */
 type NoteQueryKeys = {
+  /** Key of the list of every note */
   all: readonly ['notes']
+  /** Key of a single note (receives the note's id) */
   detail: (id: string) => readonly ['notes', 'detail', string]
 }
 

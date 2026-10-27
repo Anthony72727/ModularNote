@@ -8,6 +8,7 @@ import styles from './NotesPage.module.css'
 
 /**
  * Notes page: creation form on the left, list of notes on the right, details panel under the list
+ * @returns The page
  */
 export function NotesPage(): JSX.Element {
   const viewModel: NotesViewModel = useNotesViewModel()

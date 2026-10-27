@@ -6,13 +6,20 @@ import type { NoteDetailsViewModel } from '../../viewModel/useNoteDetailsViewMod
 import { useNoteDetailsViewModel } from '../../viewModel/useNoteDetailsViewModel'
 import styles from './NoteDetailsPanel.module.css'
 
+/**
+ * Props of NoteDetailsPanel
+ */
 type NoteDetailsPanelProps = {
+  /** Id of the note to show */
   noteId: string
+  /** Called when the user closes the panel (close button or Escape) */
   onClose: () => void
 }
 
 /**
  * Panel that slides up from the bottom of the list and shows the selected note
+ * @param props - The note to show and what to do when the panel is closed
+ * @returns The panel
  */
 export function NoteDetailsPanel({ noteId, onClose }: NoteDetailsPanelProps): JSX.Element {
   const viewModel: NoteDetailsViewModel = useNoteDetailsViewModel(noteId)

@@ -9,6 +9,7 @@ import styles from './NoteForm.module.css'
 
 /**
  * Full creation form of a note (title + description)
+ * @returns The form
  */
 export function NoteForm(): JSX.Element {
   const viewModel: AddNoteViewModel = useAddNoteViewModel()

@@ -12,13 +12,20 @@ import { noteQueryKeys } from './noteQueryKeys'
  */
 const MAX_RETRIES: number = 3
 
+/**
+ * State of the details panel
+ */
 export type NoteDetailsViewModel = {
+  /** Note to show, null while it is not known yet or when it cannot be loaded */
   note: Note | null
+  /** Message to show when the note cannot be loaded, null otherwise */
   error: string | null
 }
 
 /**
  * ViewModel of the details panel: shows the note from the list right away, then refreshes it from the API
+ * @param noteId - Id of the note to show
+ * @returns The note and the error to show
  */
 export function useNoteDetailsViewModel(noteId: string): NoteDetailsViewModel {
   const { getNoteById }: Dependencies = useDependencies()

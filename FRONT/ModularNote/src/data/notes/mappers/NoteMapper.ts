@@ -4,6 +4,8 @@ import type { NoteDto } from '../dtos/NoteDto'
 
 /**
  * Convert a note sent by the API into a note of the domain (the date string becomes a Date)
+ * @param dto - Note as sent by the API
+ * @returns The note of the domain
  */
 export function toNote(dto: NoteDto): Note {
   return {
@@ -16,6 +18,8 @@ export function toNote(dto: NoteDto): Note {
 
 /**
  * Convert a validated note into the body of POST /api/notes
+ * @param note - Note validated by the domain
+ * @returns The JSON body of the request
  */
 export function toAddNoteRequestDto(note: NewNote): AddNoteRequestDto {
   return {
