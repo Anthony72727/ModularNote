@@ -1,7 +1,10 @@
 import { HttpNoteRepository } from '../../data/notes/repositories/HttpNoteRepository'
-import { AddNoteUseCase } from '../../domain/notes/interactors/AddNoteUseCase'
-import { GetNoteByIdUseCase } from '../../domain/notes/interactors/GetNoteByIdUseCase'
-import { GetNotesUseCase } from '../../domain/notes/interactors/GetNotesUseCase'
+import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
+import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
+import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
+import type { AddNoteUseCase } from '../../domain/notes/interactors/AddNoteUseCase'
+import type { GetNoteByIdUseCase } from '../../domain/notes/interactors/GetNoteByIdUseCase'
+import type { GetNotesUseCase } from '../../domain/notes/interactors/GetNotesUseCase'
 import type { NoteRepository } from '../../domain/notes/repositories/NoteRepository'
 import { HttpClient } from '../http/HttpClient'
 
@@ -18,7 +21,7 @@ export type Dependencies = {
 }
 
 /**
- * Composition root: the only place that knows the implementations of the data layer
+ * Composition root: the only place that knows the implementations of the use cases and of the data layer
  * @returns Every use case, wired to the REST API
  */
 export function createDependencies(): Dependencies {
@@ -26,8 +29,8 @@ export function createDependencies(): Dependencies {
   const noteRepository: NoteRepository = new HttpNoteRepository(httpClient)
 
   return {
-    getNotes: new GetNotesUseCase(noteRepository),
-    getNoteById: new GetNoteByIdUseCase(noteRepository),
-    addNote: new AddNoteUseCase(noteRepository),
+    getNotes: new GetNotesUseCaseImpl(noteRepository),
+    getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
+    addNote: new AddNoteUseCaseImpl(noteRepository),
   }
 }

@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { JSX, ReactNode } from 'react'
-import { AddNoteUseCase } from '../../domain/notes/interactors/AddNoteUseCase'
-import { GetNoteByIdUseCase } from '../../domain/notes/interactors/GetNoteByIdUseCase'
-import { GetNotesUseCase } from '../../domain/notes/interactors/GetNotesUseCase'
+import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
+import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
+import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
 import type { NoteRepository } from '../../domain/notes/repositories/NoteRepository'
 import type { Dependencies } from './Dependencies'
 import { DependenciesProvider } from './DependenciesProvider'
@@ -28,9 +28,9 @@ export function createTestContext(noteRepository: NoteRepository): TestContext {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
   const dependencies: Dependencies = {
-    getNotes: new GetNotesUseCase(noteRepository),
-    getNoteById: new GetNoteByIdUseCase(noteRepository),
-    addNote: new AddNoteUseCase(noteRepository),
+    getNotes: new GetNotesUseCaseImpl(noteRepository),
+    getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
+    addNote: new AddNoteUseCaseImpl(noteRepository),
   }
 
   function wrapper({ children }: { children: ReactNode }): JSX.Element {

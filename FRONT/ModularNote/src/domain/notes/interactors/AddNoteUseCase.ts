@@ -1,21 +1,9 @@
-import { createNewNote } from '../entity/models/Note'
-import type { NewNote, Note } from '../entity/models/Note'
-import type { NoteRepository } from '../repositories/NoteRepository'
+import type { Note } from '../entity/models/Note'
 
 /**
  * Add a note after validating it
  */
-export class AddNoteUseCase {
-  private readonly noteRepository: NoteRepository
-
-  /**
-   * Create the use case
-   * @param noteRepository - Where the note is saved
-   */
-  constructor(noteRepository: NoteRepository) {
-    this.noteRepository = noteRepository
-  }
-
+export interface AddNoteUseCase {
   /**
    * Validate the note, then save it
    * @param title - Title typed by the user
@@ -24,8 +12,5 @@ export class AddNoteUseCase {
    * @throws NoteValidationError if the title or the description is invalid
    * @throws NoteRejectedError if the server refuses the note
    */
-  async execute(title: string, description: string | null): Promise<Note> {
-    const newNote: NewNote = createNewNote(title, description)
-    return this.noteRepository.add(newNote)
-  }
+  execute(title: string, description: string | null): Promise<Note>
 }
