@@ -6,7 +6,7 @@ import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejec
 import type { Note } from '../../../domain/notes/entity/models/Note'
 import { aNote, createFakeNoteRepository } from '../../../domain/notes/repositories/FakeNoteRepository.test-utils'
 import { noteQueryKeys } from './noteQueryKeys'
-import { useAddNoteViewModel } from './useAddNoteViewModel'
+import { MAX_RECENT_NOTES, useAddNoteViewModel } from './useAddNoteViewModel'
 
 afterEach(cleanup)
 
@@ -88,5 +88,32 @@ describe('useAddNoteViewModel', () => {
     act(() => result.current.submit())
 
     expect(repository.add).toHaveBeenCalledOnce()
+  })
+
+  it('tells whether the title is blank', () => {
+    const { wrapper } = createTestContext(createFakeNoteRepository())
+    const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+    expect(result.current.isTitleBlank).toBe(true)
+    act(() => result.current.changeTitle('   '))
+    expect(result.current.isTitleBlank).toBe(true)
+    act(() => result.current.changeTitle(' a '))
+    expect(result.current.isTitleBlank).toBe(false)
+  })
+
+  it('keeps the last created notes, newest first, up to the limit', async () => {
+    const repository = createFakeNoteRepository()
+    let count = 0
+    repository.add.mockImplementation(async () => aNote({ id: String(++count) }))
+    const { wrapper } = createTestContext(repository)
+    const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+    for (let index = 1; index <= MAX_RECENT_NOTES + 1; index++) {
+      act(() => result.current.changeTitle(`Idée ${index}`))
+      act(() => result.current.submit())
+      await waitFor(() => expect(result.current.recentNotes[0]?.id).toBe(String(index)))
+    }
+
+    expect(result.current.recentNotes.map((note) => note.id)).toEqual(['6', '5', '4', '3', '2'])
   })
 })
