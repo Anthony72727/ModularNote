@@ -27,6 +27,11 @@ export function App(): JSX.Element {
                 Mes idées
               </NavLink>
             </li>
+            <li>
+              <NavLink to={appPaths.quickAdd} className={navLinkClassName}>
+                Ajout rapide
+              </NavLink>
+            </li>
           </ul>
         </nav>
       </header>

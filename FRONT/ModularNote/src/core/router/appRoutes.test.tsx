@@ -40,4 +40,16 @@ describe('appRoutes', () => {
     expect(router.state.location.pathname).toBe('/')
     expect(await screen.findByRole('heading', { name: 'Mes idées' })).toBeDefined()
   })
+
+  it('shows the quick add page and goes back to the notes from the navigation', async () => {
+    const router = renderAt('/quick-add')
+
+    expect(screen.getByRole('textbox', { name: 'Nouvelle idée' })).toBeDefined()
+    expect(screen.getByRole('link', { name: 'Ajout rapide' }).getAttribute('aria-current')).toBe('page')
+
+    await userEvent.click(screen.getByRole('link', { name: 'Mes idées' }))
+
+    expect(router.state.location.pathname).toBe('/')
+    expect(await screen.findByRole('heading', { name: 'Mes idées' })).toBeDefined()
+  })
 })

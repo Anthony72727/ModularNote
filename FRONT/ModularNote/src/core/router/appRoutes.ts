@@ -3,6 +3,7 @@ import type { DataRouter, RouteObject } from 'react-router'
 import { App } from '../../App'
 import { NotFoundPage } from '../../presentation/core/view/NotFoundPage'
 import { NotesPage } from '../../presentation/notes/view/NotesPage'
+import { QuickAddPage } from '../../presentation/notes/view/QuickAddPage'
 import { appPaths } from './appPaths'
 
 /**
@@ -15,6 +16,7 @@ export const appRoutes: RouteObject[] = [
     Component: App,
     children: [
       { index: true, Component: NotesPage },
+      { path: appPaths.quickAdd, Component: QuickAddPage },
       { path: '*', Component: NotFoundPage },
     ],
   },

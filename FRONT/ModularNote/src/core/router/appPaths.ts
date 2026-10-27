@@ -4,6 +4,8 @@
 type AppPaths = {
   /** List of the notes, with the full creation form and the details panel */
   notes: '/'
+  /** Centered field to add ideas one after the other (US1.3) */
+  quickAdd: '/quick-add'
 }
 
 /**
@@ -11,4 +13,5 @@ type AppPaths = {
  */
 export const appPaths: AppPaths = {
   notes: '/',
+  quickAdd: '/quick-add',
 }

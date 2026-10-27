@@ -10,19 +10,28 @@ import { toNoteErrorMessage } from '../util/toNoteErrorMessage'
 import { noteQueryKeys } from './noteQueryKeys'
 
 /**
- * State and actions of the note creation form
+ * Number of notes kept in recentNotes
+ */
+export const MAX_RECENT_NOTES: number = 5
+
+/**
+ * State and actions of a note creation form (full form or quick add)
  */
 export type AddNoteViewModel = {
   /** Title typed by the user, as is */
   title: string
   /** Description typed by the user, as is */
   description: string
+  /** True when the title is empty or only made of spaces */
+  isTitleBlank: boolean
   /** Message to show to the user, null when there is no error */
   error: string | null
   /** Field to highlight, null when the error is not about a specific field */
   invalidField: NoteField | null
-  /** True while the note is being sent, to disable the submit button */
+  /** True while the note is being sent */
   isSubmitting: boolean
+  /** Notes created with this form since it was opened, newest first (at most MAX_RECENT_NOTES) */
+  recentNotes: Note[]
   /** Replace the title and clear the current error (receives the new title) */
   changeTitle: (value: string) => void
   /** Replace the description and clear the current error (receives the new description) */
@@ -40,7 +49,7 @@ type AddNoteInput = {
 }
 
 /**
- * ViewModel of the note creation form (also meant to be reused by the quick add of US1.3)
+ * ViewModel of the note creation forms: the full form of the notes page and the quick add (US1.3)
  * @returns The state of the form and the actions the view can call
  */
 export function useAddNoteViewModel(): AddNoteViewModel {
@@ -48,6 +57,7 @@ export function useAddNoteViewModel(): AddNoteViewModel {
   const queryClient: QueryClient = useQueryClient()
   const [title, setTitle] = useState<string>('')
   const [description, setDescription] = useState<string>('')
+  const [recentNotes, setRecentNotes] = useState<Note[]>([])
 
   const addNoteMutation: UseMutationResult<Note, Error, AddNoteInput> = useMutation({
     mutationFn: (input: AddNoteInput): Promise<Note> => addNote.execute(input.title, input.description),
@@ -83,9 +93,10 @@ export function useAddNoteViewModel(): AddNoteViewModel {
     addNoteMutation.mutate(
       { title, description },
       {
-        onSuccess: (): void => {
+        onSuccess: (note: Note): void => {
           setTitle('')
           setDescription('')
+          setRecentNotes((notes: Note[]): Note[] => [note, ...notes].slice(0, MAX_RECENT_NOTES))
         },
       },
     )
@@ -94,9 +105,11 @@ export function useAddNoteViewModel(): AddNoteViewModel {
   return {
     title,
     description,
+    isTitleBlank: title.trim().length === 0,
     error: addNoteMutation.isError ? toNoteErrorMessage(addNoteMutation.error) : null,
     invalidField: addNoteMutation.error instanceof NoteValidationError ? addNoteMutation.error.field : null,
     isSubmitting: addNoteMutation.isPending,
+    recentNotes,
     changeTitle,
     changeDescription,
     submit,
