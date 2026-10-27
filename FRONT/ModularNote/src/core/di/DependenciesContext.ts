@@ -1,0 +1,21 @@
+import { createContext, use } from 'react'
+import type { Context } from 'react'
+import type { Dependencies } from './Dependencies'
+
+/**
+ * React context that carries the use cases (null outside a DependenciesProvider)
+ */
+export const DependenciesContext: Context<Dependencies | null> = createContext<Dependencies | null>(null)
+
+/**
+ * Give access to the use cases from a ViewModel
+ * @returns The use cases given to the closest DependenciesProvider
+ * @throws Error if there is no DependenciesProvider above the component
+ */
+export function useDependencies(): Dependencies {
+  const dependencies: Dependencies | null = use(DependenciesContext)
+  if (dependencies === null) {
+    throw new Error('useDependencies must be used inside a DependenciesProvider')
+  }
+  return dependencies
+}

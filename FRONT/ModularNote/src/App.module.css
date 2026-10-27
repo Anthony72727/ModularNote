@@ -1,0 +1,32 @@
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100dvh;
+}
+
+.header {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.brand {
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.main {
+  min-height: 0;
+}
+
+@media (max-width: 768px) {
+  .app {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .header {
+    padding: 12px 16px;
+  }
+}
