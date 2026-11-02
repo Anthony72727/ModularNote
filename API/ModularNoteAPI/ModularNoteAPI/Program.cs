@@ -2,6 +2,7 @@ using Application.Notes.Abstractions.UseCases;
 using Application.Notes.UseCases;
 using Infrastructure;
 using ModularNoteAPI.ExceptionHandlers;
+using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,7 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
