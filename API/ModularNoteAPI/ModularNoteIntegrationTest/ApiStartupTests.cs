@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ModularNoteIntegrationTest;
 
@@ -19,6 +20,25 @@ public class ApiStartupTests : IClassFixture<ModularNoteApiFactory>
         var response = await _client.GetAsync("/openapi/v1.json");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScalarPage_IsExposed_InDevelopment()
+    {
+        var response = await _client.GetAsync("/scalar");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+    }
+
+    [Fact]
+    public async Task ScalarPage_IsNotExposed_InProduction()
+    {
+        using var client = _factory.WithWebHostBuilder(builder => builder.UseEnvironment("Production")).CreateClient();
+
+        var response = await client.GetAsync("/scalar");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
