@@ -28,5 +28,12 @@ namespace Domain.Repositories
         /// <param name="cancellationToken">The token to monitor for cancellation requests</param>
         /// <returns>The task corresponding to the id given in parameter, or null if not found</returns>
         Task<Note?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Save the modifications of an existing note in the database
+        /// </summary>
+        /// <param name="note">The modified note</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests</param>
+        Task UpdateAsync(Note note, CancellationToken cancellationToken = default);
     }
 }

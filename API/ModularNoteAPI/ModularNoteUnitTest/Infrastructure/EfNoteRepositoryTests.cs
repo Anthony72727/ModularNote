@@ -144,6 +144,51 @@ namespace ModularNoteUnitTest.Infrastructure
             Assert.Empty(dbContext.ChangeTracker.Entries());
         }
 
+        [Fact]
+        public async Task UpdateAsync_NoteReadByTheRepository_SavesTheModifications()
+        {
+            var note = Note.Create("Titre", "Description");
+            await SeedAsync(Note.Create("Autre", null), note);
+
+            using (var dbContext = _database.CreateDbContext())
+            {
+                var repository = new EfNoteRepository(dbContext);
+                var found = await repository.GetByIdAsync(note.Id);
+                found!.Update("Nouveau titre", null);
+                await repository.UpdateAsync(found);
+            }
+
+            using var readContext = _database.CreateDbContext();
+            Assert.Equal(2, await readContext.Notes.CountAsync());
+            var saved = await readContext.Notes.SingleAsync(n => n.Id == note.Id);
+            Assert.Equal("Nouveau titre", saved.Title);
+            Assert.Null(saved.Description);
+            Assert.Equal(note.CreatedAt, saved.CreatedAt);
+            Assert.NotNull(saved.UpdatedAt);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithCancelledToken_DoesNotSaveTheModifications()
+        {
+            var note = Note.Create("Titre", null);
+            await SeedAsync(note);
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            using (var dbContext = _database.CreateDbContext())
+            {
+                var repository = new EfNoteRepository(dbContext);
+                var found = await repository.GetByIdAsync(note.Id);
+                found!.Update("Nouveau titre", null);
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.UpdateAsync(found, cancellation.Token));
+            }
+
+            using var readContext = _database.CreateDbContext();
+            var saved = await readContext.Notes.SingleAsync();
+            Assert.Equal("Titre", saved.Title);
+            Assert.Null(saved.UpdatedAt);
+        }
+
         private async Task SeedAsync(params Note[] notes)
         {
             using var dbContext = _database.CreateDbContext();

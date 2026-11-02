@@ -212,6 +212,68 @@ public class NotesEndpointsTests : IClassFixture<ModularNoteApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    // ---------- PUT /api/notes/{id} ----------
+
+    [Fact]
+    public async Task UpdateNote_ValidNote_Returns200WithTheUpdatedNote()
+    {
+        var created = await AddNoteAsync(_client, "Idée", "Description");
+
+        var response = await _client.PutAsJsonAsync($"{NotesUrl}/{created.Id}", new { title = "  Nouveau titre  ", description = "Nouvelle description" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var note = await response.Content.ReadFromJsonAsync<NoteDto>();
+        Assert.Equal(created.Id, note!.Id);
+        Assert.Equal("Nouveau titre", note.Title);
+        Assert.Equal("Nouvelle description", note.Description);
+        Assert.Equal(created.CreatedAt, note.CreatedAt);
+    }
+
+    [Fact]
+    public async Task UpdateNote_ValidNote_IsPersisted()
+    {
+        var created = await AddNoteAsync(_client, "Idée", "Description");
+
+        await _client.PutAsJsonAsync($"{NotesUrl}/{created.Id}", new { title = "Nouveau titre", description = (string?)null });
+
+        var saved = await _client.GetFromJsonAsync<NoteDto>($"{NotesUrl}/{created.Id}");
+        Assert.Equal("Nouveau titre", saved!.Title);
+        Assert.Null(saved.Description);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UpdateNote_EmptyTitle_Returns400ProblemDetails(string title)
+    {
+        var created = await AddNoteAsync(_client, "Idée");
+
+        var response = await _client.PutAsJsonAsync($"{NotesUrl}/{created.Id}", new { title });
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest, "Title must be non-empty and less than or equal to 100 characters.");
+    }
+
+    [Fact]
+    public async Task UpdateNote_DescriptionTooLong_Returns400AndLeavesTheNoteUnchanged()
+    {
+        var created = await AddNoteAsync(_client, "Idée", "Description");
+
+        var response = await _client.PutAsJsonAsync($"{NotesUrl}/{created.Id}", new { title = "Nouveau titre", description = new string('b', 5001) });
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest, "Description must be less than or equal to 5000 characters.");
+        var saved = await _client.GetFromJsonAsync<NoteDto>($"{NotesUrl}/{created.Id}");
+        Assert.Equal("Idée", saved!.Title);
+        Assert.Equal("Description", saved.Description);
+    }
+
+    [Fact]
+    public async Task UpdateNote_UnknownId_Returns404ProblemDetails()
+    {
+        var response = await _client.PutAsJsonAsync($"{NotesUrl}/{Guid.NewGuid()}", new { title = "Idée" });
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound, "The note was not found.");
+    }
+
     // ---------- Helpers ----------
 
     private static async Task<NoteDto> AddNoteAsync(HttpClient client, string title, string? description = null)

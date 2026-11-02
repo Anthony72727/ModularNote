@@ -62,6 +62,31 @@ namespace ModularNoteUnitTest.Domain
         }
 
         [Fact]
+        public void Update_TrimsTheTitleAndStoresABlankDescriptionAsNull()
+        {
+            var note = Note.Create("Titre", "Description");
+
+            note.Update("  Nouveau titre  ", "   ");
+
+            Assert.Equal("Nouveau titre", note.Title);
+            Assert.Null(note.Description);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Update_WithEmptyTitle_LeavesNoteUnchanged(string title)
+        {
+            var note = Note.Create("Titre", "Description");
+
+            Assert.Throws<TitleInvalidException>(() => note.Update(title, "Autre description"));
+
+            Assert.Equal("Titre", note.Title);
+            Assert.Equal("Description", note.Description);
+            Assert.Null(note.UpdatedAt);
+        }
+
+        [Fact]
         public void Update_WithInvalidDescription_LeavesNoteUnchanged()
         {
             var note = Note.Create("Titre", "Description");

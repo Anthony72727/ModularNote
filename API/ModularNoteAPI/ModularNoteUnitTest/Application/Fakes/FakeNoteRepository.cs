@@ -10,6 +10,8 @@ namespace ModularNoteUnitTest.Application.Fakes
     {
         public List<Note> Notes { get; } = new();
 
+        public List<Note> UpdatedNotes { get; } = new();
+
         public Task AddAsync(Note note, CancellationToken cancellationToken = default)
         {
             Notes.Add(note);
@@ -24,6 +26,12 @@ namespace ModularNoteUnitTest.Application.Fakes
         public Task<Note?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Notes.FirstOrDefault(note => note.Id == id));
+        }
+
+        public Task UpdateAsync(Note note, CancellationToken cancellationToken = default)
+        {
+            UpdatedNotes.Add(note);
+            return Task.CompletedTask;
         }
     }
 }

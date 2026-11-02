@@ -4,3 +4,13 @@ GET {{ModularNoteAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+PUT {{ModularNoteAPI_HostAddress}}/api/notes/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "title": "Nouveau titre",
+  "description": "Nouvelle description"
+}
+
+###

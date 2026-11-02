@@ -44,5 +44,13 @@ namespace Infrastructure.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
         }
+
+        /// <inheritdoc/>
+        public async Task UpdateAsync(Note note, CancellationToken cancellationToken = default)
+        {
+            // The notes are read without tracking: the note has to be attached to the context again
+            _dbContext.Notes.Update(note);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 }
