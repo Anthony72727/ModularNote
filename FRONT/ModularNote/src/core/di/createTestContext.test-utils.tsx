@@ -3,6 +3,7 @@ import type { JSX, ReactNode } from 'react'
 import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
 import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
 import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
+import { UpdateNoteUseCaseImpl } from '../../domain/notes/interactors/UpdateNoteUseCaseImpl'
 import type { NoteRepository } from '../../domain/notes/repositories/NoteRepository'
 import type { Dependencies } from './Dependencies'
 import { DependenciesProvider } from './DependenciesProvider'
@@ -31,6 +32,7 @@ export function createTestContext(noteRepository: NoteRepository): TestContext {
     getNotes: new GetNotesUseCaseImpl(noteRepository),
     getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
     addNote: new AddNoteUseCaseImpl(noteRepository),
+    updateNote: new UpdateNoteUseCaseImpl(noteRepository),
   }
 
   function wrapper({ children }: { children: ReactNode }): JSX.Element {

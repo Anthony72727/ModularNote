@@ -50,6 +50,20 @@ export class HttpClient {
     return this.send<TResponse>('POST', path, body, signal)
   }
 
+  /**
+   * Send a PUT request with a JSON body and read the JSON body of the response
+   * @typeParam TResponse - Shape of the JSON sent back by the API
+   * @typeParam TBody - Shape of the JSON sent to the API
+   * @param path - Path under the base URL, e.g. "/notes/1"
+   * @param body - Object sent as JSON
+   * @param signal - Cancels the request when the caller does not need the result anymore
+   * @returns The JSON body of the response, or undefined for a 204 No Content
+   * @throws ApiError if the status is not 2xx
+   */
+  put<TResponse, TBody>(path: string, body: TBody, signal?: AbortSignal): Promise<TResponse> {
+    return this.send<TResponse>('PUT', path, body, signal)
+  }
+
   private async send<TResponse>(
     method: HttpMethod,
     path: string,

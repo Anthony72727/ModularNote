@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toAddNoteRequestDto, toNote } from './NoteMapper'
+import { toAddNoteRequestDto, toNote, toUpdateNoteRequestDto } from './NoteMapper'
 
 describe('NoteMapper', () => {
   it('converts a DTO into a note, with a real Date', () => {
@@ -15,6 +15,13 @@ describe('NoteMapper', () => {
       title: 'Titre',
       description: null,
       createdAt: new Date(Date.UTC(2026, 9, 26, 10, 15, 30, 123)),
+    })
+  })
+
+  it('converts the content of a note into the update request body', () => {
+    expect(toUpdateNoteRequestDto({ title: 'Titre', description: null })).toEqual({
+      title: 'Titre',
+      description: null,
     })
   })
 
