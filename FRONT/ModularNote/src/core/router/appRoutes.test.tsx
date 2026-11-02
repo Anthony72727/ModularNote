@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createFakeNoteRepository } from '../../domain/notes/repositories/FakeNoteRepository.test-utils'
 import { createTestContext } from '../di/createTestContext.test-utils'
 import { appRoutes } from './appRoutes'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+})
 
 /**
  * Render the whole application at the given URL, with no note saved
@@ -51,5 +54,59 @@ describe('appRoutes', () => {
 
     expect(router.state.location.pathname).toBe('/')
     expect(await screen.findByRole('heading', { name: 'Mes idées' })).toBeDefined()
+  })
+
+  describe('leaving a page with unsaved text', () => {
+    function isReloadBlocked(): boolean {
+      const event = new Event('beforeunload', { cancelable: true })
+      window.dispatchEvent(event)
+      return event.defaultPrevented
+    }
+
+    it('stays on the quick add page and keeps the text when the user refuses', async () => {
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+      const router = renderAt('/quick-add')
+      const field = screen.getByRole('textbox', { name: 'Nouvelle idée' }) as HTMLInputElement
+      await userEvent.type(field, 'Mon idée')
+
+      await userEvent.click(screen.getByRole('link', { name: 'Mes idées' }))
+
+      await waitFor(() => expect(confirm).toHaveBeenCalledOnce())
+      expect(router.state.location.pathname).toBe('/quick-add')
+      expect(field.value).toBe('Mon idée')
+    })
+
+    it('leaves the page when the user accepts to lose the text of the creation form', async () => {
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const router = renderAt('/')
+      await userEvent.type(screen.getByLabelText('Titre'), 'Mon idée')
+
+      await userEvent.click(screen.getByRole('link', { name: 'Ajout rapide' }))
+
+      await waitFor(() => expect(router.state.location.pathname).toBe('/quick-add'))
+      expect(confirm).toHaveBeenCalledOnce()
+    })
+
+    it('does not ask when nothing was typed', async () => {
+      const confirm = vi.spyOn(window, 'confirm')
+      const router = renderAt('/quick-add')
+
+      await userEvent.click(screen.getByRole('link', { name: 'Mes idées' }))
+
+      expect(router.state.location.pathname).toBe('/')
+      expect(confirm).not.toHaveBeenCalled()
+    })
+
+    it('makes the browser ask before reloading or closing the tab, only while there is unsaved text', async () => {
+      renderAt('/quick-add')
+      const field = screen.getByRole('textbox', { name: 'Nouvelle idée' })
+      expect(isReloadBlocked()).toBe(false)
+
+      await userEvent.type(field, 'M')
+      expect(isReloadBlocked()).toBe(true)
+
+      await userEvent.clear(field)
+      expect(isReloadBlocked()).toBe(false)
+    })
   })
 })

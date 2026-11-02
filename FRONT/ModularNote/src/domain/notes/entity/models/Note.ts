@@ -25,7 +25,7 @@ export type Note = {
 }
 
 /**
- * A valid note that is not saved yet
+ * The valid content of a note that is not saved yet (a new note, or the modifications of an existing one)
  */
 export type NewNote = {
   /** Trimmed title, between 1 and NOTE_TITLE_MAX_LENGTH characters */
@@ -35,7 +35,7 @@ export type NewNote = {
 }
 
 /**
- * Create a valid note to save (same rules as the API's Note entity)
+ * Create the valid content of a note to save, for a creation or a modification (same rules as the API's Note entity)
  * @param title - Title typed by the user, trimmed by this function
  * @param description - Description typed by the user; an empty or blank one becomes null
  * @returns The validated note, ready to be saved

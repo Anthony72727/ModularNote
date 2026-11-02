@@ -2,9 +2,11 @@ import { HttpNoteRepository } from '../../data/notes/repositories/HttpNoteReposi
 import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
 import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
 import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
+import { UpdateNoteUseCaseImpl } from '../../domain/notes/interactors/UpdateNoteUseCaseImpl'
 import type { AddNoteUseCase } from '../../domain/notes/interactors/AddNoteUseCase'
 import type { GetNoteByIdUseCase } from '../../domain/notes/interactors/GetNoteByIdUseCase'
 import type { GetNotesUseCase } from '../../domain/notes/interactors/GetNotesUseCase'
+import type { UpdateNoteUseCase } from '../../domain/notes/interactors/UpdateNoteUseCase'
 import type { NoteRepository } from '../../domain/notes/repositories/NoteRepository'
 import { HttpClient } from '../http/HttpClient'
 
@@ -18,6 +20,8 @@ export type Dependencies = {
   getNoteById: GetNoteByIdUseCase
   /** Validate and save a new note */
   addNote: AddNoteUseCase
+  /** Validate and save the modifications of a note */
+  updateNote: UpdateNoteUseCase
 }
 
 /**
@@ -32,5 +36,6 @@ export function createDependencies(): Dependencies {
     getNotes: new GetNotesUseCaseImpl(noteRepository),
     getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
     addNote: new AddNoteUseCaseImpl(noteRepository),
+    updateNote: new UpdateNoteUseCaseImpl(noteRepository),
   }
 }

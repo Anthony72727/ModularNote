@@ -1,6 +1,7 @@
 import type { NewNote, Note } from '../../../domain/notes/entity/models/Note'
 import type { AddNoteRequestDto } from '../dtos/AddNoteRequestDto'
 import type { NoteDto } from '../dtos/NoteDto'
+import type { UpdateNoteRequestDto } from '../dtos/UpdateNoteRequestDto'
 
 /**
  * Convert a note sent by the API into a note of the domain (the date string becomes a Date)
@@ -22,6 +23,18 @@ export function toNote(dto: NoteDto): Note {
  * @returns The JSON body of the request
  */
 export function toAddNoteRequestDto(note: NewNote): AddNoteRequestDto {
+  return {
+    title: note.title,
+    description: note.description,
+  }
+}
+
+/**
+ * Convert the validated content of a note into the body of PUT /api/notes/{id}
+ * @param note - Content validated by the domain
+ * @returns The JSON body of the request
+ */
+export function toUpdateNoteRequestDto(note: NewNote): UpdateNoteRequestDto {
   return {
     title: note.title,
     description: note.description,

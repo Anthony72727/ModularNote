@@ -18,6 +18,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<IAddNoteUseCase, AddNoteUseCase>();
 builder.Services.AddScoped<IGetNotesUseCase, GetNotesUseCase>();
 builder.Services.AddScoped<IGetNoteByIdUseCase, GetNoteByIdUseCase>();
+builder.Services.AddScoped<IUpdateNoteUseCase, UpdateNoteUseCase>();
 
 // Infrastructure (database + repositories)
 builder.Services.AddInfrastructure(builder.Configuration);

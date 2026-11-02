@@ -40,7 +40,14 @@ export function NotesPage(): JSX.Element {
         />
 
         {viewModel.selectedNoteId !== null && (
-          <NoteDetailsPanel noteId={viewModel.selectedNoteId} onClose={viewModel.closeNote} />
+          // One panel per note: selecting another note leaves the edition of the previous one
+          <NoteDetailsPanel
+            key={viewModel.selectedNoteId}
+            noteId={viewModel.selectedNoteId}
+            onClose={viewModel.closeNote}
+            hasUnsavedEdit={viewModel.hasUnsavedEdit}
+            onUnsavedEditChange={viewModel.changeHasUnsavedEdit}
+          />
         )}
       </section>
     </div>

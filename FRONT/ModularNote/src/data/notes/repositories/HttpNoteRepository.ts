@@ -7,7 +7,8 @@ import type { NoteRepository } from '../../../domain/notes/repositories/NoteRepo
 import type { AddNoteRequestDto } from '../dtos/AddNoteRequestDto'
 import type { GetNotesResponseDto } from '../dtos/GetNotesResponseDto'
 import type { NoteDto } from '../dtos/NoteDto'
-import { toAddNoteRequestDto, toNote } from '../mappers/NoteMapper'
+import type { UpdateNoteRequestDto } from '../dtos/UpdateNoteRequestDto'
+import { toAddNoteRequestDto, toNote, toUpdateNoteRequestDto } from '../mappers/NoteMapper'
 
 /**
  * NoteRepository that calls the REST API (/api/notes)
@@ -48,6 +49,25 @@ export class HttpNoteRepository implements NoteRepository {
       const dto: NoteDto = await this.httpClient.post<NoteDto, AddNoteRequestDto>('/notes', toAddNoteRequestDto(note))
       return toNote(dto)
     } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 400) {
+        throw new NoteRejectedError()
+      }
+      throw error
+    }
+  }
+
+  /** @inheritDoc */
+  async update(id: string, note: NewNote): Promise<Note> {
+    try {
+      const dto: NoteDto = await this.httpClient.put<NoteDto, UpdateNoteRequestDto>(
+        `/notes/${encodeURIComponent(id)}`,
+        toUpdateNoteRequestDto(note),
+      )
+      return toNote(dto)
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 404) {
+        throw new NoteNotFoundError(id)
+      }
       if (error instanceof ApiError && error.status === 400) {
         throw new NoteRejectedError()
       }

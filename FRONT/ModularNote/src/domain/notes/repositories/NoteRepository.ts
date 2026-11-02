@@ -27,4 +27,14 @@ export interface NoteRepository {
    * @throws NoteRejectedError if the server refuses the note
    */
   add(note: NewNote): Promise<Note>
+
+  /**
+   * Save the modifications of an existing note
+   * @param id - Id of the note to modify
+   * @param note - New content of the note, already validated by the domain
+   * @returns The saved note
+   * @throws NoteNotFoundError if the note does not exist anymore
+   * @throws NoteRejectedError if the server refuses the note
+   */
+  update(id: string, note: NewNote): Promise<Note>
 }

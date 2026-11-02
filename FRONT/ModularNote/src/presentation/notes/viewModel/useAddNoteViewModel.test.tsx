@@ -101,6 +101,20 @@ describe('useAddNoteViewModel', () => {
     expect(result.current.isTitleBlank).toBe(false)
   })
 
+  it('tells whether something was typed in the title or the description', () => {
+    const { wrapper } = createTestContext(createFakeNoteRepository())
+    const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+    expect(result.current.hasUnsavedInput).toBe(false)
+    act(() => result.current.changeTitle('   '))
+    expect(result.current.hasUnsavedInput).toBe(false)
+    act(() => result.current.changeDescription('Détails'))
+    expect(result.current.hasUnsavedInput).toBe(true)
+    act(() => result.current.changeDescription(''))
+    act(() => result.current.changeTitle('Mon idée'))
+    expect(result.current.hasUnsavedInput).toBe(true)
+  })
+
   it('keeps the last created notes, newest first, up to the limit', async () => {
     const repository = createFakeNoteRepository()
     let count = 0

@@ -24,6 +24,8 @@ export type AddNoteViewModel = {
   description: string
   /** True when the title is empty or only made of spaces */
   isTitleBlank: boolean
+  /** True when the user typed something that is not saved yet */
+  hasUnsavedInput: boolean
   /** Message to show to the user, null when there is no error */
   error: string | null
   /** Field to highlight, null when the error is not about a specific field */
@@ -106,6 +108,7 @@ export function useAddNoteViewModel(): AddNoteViewModel {
     title,
     description,
     isTitleBlank: title.trim().length === 0,
+    hasUnsavedInput: title.trim().length > 0 || description.trim().length > 0,
     error: addNoteMutation.isError ? toNoteErrorMessage(addNoteMutation.error) : null,
     invalidField: addNoteMutation.error instanceof NoteValidationError ? addNoteMutation.error.field : null,
     isSubmitting: addNoteMutation.isPending,

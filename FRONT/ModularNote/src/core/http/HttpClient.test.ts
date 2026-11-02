@@ -45,6 +45,20 @@ describe('HttpClient', () => {
     })
   })
 
+  it('PUT: sends the body as JSON', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { id: '1' }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await new HttpClient('/api').put('/notes/1', { title: 'Titre' })
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/notes/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"title":"Titre"}',
+      signal: undefined,
+    })
+  })
+
   it('returns undefined on 204 No Content', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })))
 

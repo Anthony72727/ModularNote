@@ -13,6 +13,8 @@ export type FakeNoteRepository = {
   getById: Mock<(id: string, signal?: AbortSignal) => Promise<Note>>
   /** Mock of NoteRepository.add */
   add: Mock<(note: NewNote) => Promise<Note>>
+  /** Mock of NoteRepository.update */
+  update: Mock<(id: string, note: NewNote) => Promise<Note>>
 } & NoteRepository
 
 /**
@@ -24,6 +26,7 @@ export function createFakeNoteRepository(): FakeNoteRepository {
     getAll: vi.fn<(signal?: AbortSignal) => Promise<Note[]>>(),
     getById: vi.fn<(id: string, signal?: AbortSignal) => Promise<Note>>(),
     add: vi.fn<(note: NewNote) => Promise<Note>>(),
+    update: vi.fn<(id: string, note: NewNote) => Promise<Note>>(),
   }
 }
 

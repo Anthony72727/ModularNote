@@ -15,6 +15,7 @@ namespace ModularNoteAPI.Controllers
         private readonly IGetNotesUseCase _getNotesUseCase;
         private readonly IGetNoteByIdUseCase _getNoteByIdUseCase;
         private readonly IAddNoteUseCase _addNoteUseCase;
+        private readonly IUpdateNoteUseCase _updateNoteUseCase;
 
         /// <summary>
         /// Instantiate the controller
@@ -22,11 +23,13 @@ namespace ModularNoteAPI.Controllers
         /// <param name="getNotesUseCase">Use case that gets every note</param>
         /// <param name="getNoteByIdUseCase">Use case that gets a note by its id</param>
         /// <param name="addNoteUseCase">Use case that adds a note</param>
-        public NotesController(IGetNotesUseCase getNotesUseCase, IGetNoteByIdUseCase getNoteByIdUseCase, IAddNoteUseCase addNoteUseCase)
+        /// <param name="updateNoteUseCase">Use case that updates a note</param>
+        public NotesController(IGetNotesUseCase getNotesUseCase, IGetNoteByIdUseCase getNoteByIdUseCase, IAddNoteUseCase addNoteUseCase, IUpdateNoteUseCase updateNoteUseCase)
         {
             _getNotesUseCase = getNotesUseCase;
             _getNoteByIdUseCase = getNoteByIdUseCase;
             _addNoteUseCase = addNoteUseCase;
+            _updateNoteUseCase = updateNoteUseCase;
         }
 
         /// <summary>
@@ -76,6 +79,25 @@ namespace ModularNoteAPI.Controllers
         {
             NoteDto response = await _addNoteUseCase.ExecuteAsync(request, cancellationToken);
             return CreatedAtAction(nameof(GetNoteById), new { id = response.Id }, response);
+        }
+
+        /// <summary>
+        /// PUT /api/notes/{id} : update a note
+        /// </summary>
+        /// <param name="id">The id of the note to update</param>
+        /// <param name="request">The new data of the note</param>
+        /// <param name="cancellationToken">Token to cancel the asynchronous operation</param>
+        /// <returns>The updated note, or 404 if it does not exist</returns>
+        [HttpPut("{id:guid}")]
+        [EndpointSummary("Update a note")]
+        [EndpointDescription("Update the title and the description of a note in the database")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<NoteDto>> UpdateNote(Guid id, UpdateNoteRequestDto request, CancellationToken cancellationToken)
+        {
+            NoteDto response = await _updateNoteUseCase.ExecuteAsync(id, request, cancellationToken);
+            return Ok(response);
         }
     }
 }

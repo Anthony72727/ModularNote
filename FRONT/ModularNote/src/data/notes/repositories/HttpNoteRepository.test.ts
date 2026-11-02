@@ -14,7 +14,7 @@ const noteDto: NoteDto = {
 }
 
 function createFakeHttpClient() {
-  const fake = { get: vi.fn(), post: vi.fn() }
+  const fake = { get: vi.fn(), post: vi.fn(), put: vi.fn() }
   return { fake, httpClient: fake as unknown as HttpClient }
 }
 
@@ -83,5 +83,46 @@ describe('HttpNoteRepository', () => {
     fake.post.mockRejectedValue(failure)
 
     await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null })).rejects.toBe(failure)
+  })
+
+  it('update: sends PUT /notes/{id} and maps the saved note', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.put.mockResolvedValue(noteDto)
+
+    const note = await new HttpNoteRepository(httpClient).update('abc', { title: 'Titre', description: 'Desc' })
+
+    expect(fake.put).toHaveBeenCalledExactlyOnceWith('/notes/abc', { title: 'Titre', description: 'Desc' })
+    expect(note.createdAt).toEqual(new Date('2026-10-26T10:00:00Z'))
+  })
+
+  it('update: turns a 404 into NoteNotFoundError', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.put.mockRejectedValue(new ApiError(404, 'The note was not found.'))
+
+    const error = await new HttpNoteRepository(httpClient)
+      .update('abc', { title: 'Titre', description: null })
+      .catch((caught: unknown) => caught)
+
+    expect(error).toBeInstanceOf(NoteNotFoundError)
+    expect((error as NoteNotFoundError).noteId).toBe('abc')
+  })
+
+  it('update: turns a 400 into NoteRejectedError', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.put.mockRejectedValue(new ApiError(400, 'Title must be non-empty.'))
+
+    await expect(
+      new HttpNoteRepository(httpClient).update('abc', { title: 'Titre', description: null }),
+    ).rejects.toBeInstanceOf(NoteRejectedError)
+  })
+
+  it('update: lets the other errors go through', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    const failure = new ApiError(500, 'boom')
+    fake.put.mockRejectedValue(failure)
+
+    await expect(new HttpNoteRepository(httpClient).update('abc', { title: 'Titre', description: null })).rejects.toBe(
+      failure,
+    )
   })
 })
