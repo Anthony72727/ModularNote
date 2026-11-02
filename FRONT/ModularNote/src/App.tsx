@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router'
 import type { NavLinkRenderProps } from 'react-router'
 import styles from './App.module.css'
 import { appPaths } from './core/router/appPaths'
+import { UnsavedChangesGuard } from './presentation/core/unsavedChanges/UnsavedChangesGuard'
 
 /**
  * Class of a navigation link, highlighted when its page is the current one
@@ -36,7 +37,9 @@ export function App(): JSX.Element {
         </nav>
       </header>
       <main className={styles.main}>
-        <Outlet />
+        <UnsavedChangesGuard>
+          <Outlet />
+        </UnsavedChangesGuard>
       </main>
     </div>
   )

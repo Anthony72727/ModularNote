@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { useUnsavedChanges } from '../../../core/unsavedChanges/UnsavedChangesContext'
 import type { AddNoteViewModel } from '../../viewModel/useAddNoteViewModel'
 import { useAddNoteViewModel } from '../../viewModel/useAddNoteViewModel'
 import { NoteFormFields } from './NoteFormFields'
@@ -9,6 +10,7 @@ import { NoteFormFields } from './NoteFormFields'
  */
 export function NoteForm(): JSX.Element {
   const viewModel: AddNoteViewModel = useAddNoteViewModel()
+  useUnsavedChanges(viewModel.hasUnsavedInput)
 
   return (
     <NoteFormFields

@@ -18,6 +18,8 @@ export type UpdateNoteViewModel = {
   title: string
   /** Description typed by the user, as is */
   description: string
+  /** True when the title or the description differs from the saved note */
+  hasUnsavedChanges: boolean
   /** Message to show to the user, null when there is no error */
   error: string | null
   /** Field to highlight, null when the error is not about a specific field */
@@ -95,6 +97,7 @@ export function useUpdateNoteViewModel(note: Note, onSaved: () => void): UpdateN
   return {
     title,
     description,
+    hasUnsavedChanges: title !== note.title || description !== (note.description ?? ''),
     error: updateNoteMutation.isError ? toNoteErrorMessage(updateNoteMutation.error) : null,
     invalidField: updateNoteMutation.error instanceof NoteValidationError ? updateNoteMutation.error.field : null,
     isSubmitting: updateNoteMutation.isPending,

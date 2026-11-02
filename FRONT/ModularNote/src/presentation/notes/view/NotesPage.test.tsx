@@ -182,6 +182,109 @@ describe('NotesPage', () => {
       await screen.findByText(/Aucune idée pour l'instant/)
     })
 
+    describe('with unsaved modifications', () => {
+      afterEach(() => {
+        vi.restoreAllMocks()
+      })
+
+      async function renderTwoNotesAndEditTheFirst(): Promise<ReturnType<typeof createFakeNoteRepository>> {
+        const repository = createFakeNoteRepository()
+        const first = aNote({ id: 'first', title: 'Première' })
+        const second = aNote({ id: 'second', title: 'Seconde' })
+        repository.getAll.mockResolvedValue([first, second])
+        repository.getById.mockImplementation(async (id: string) => (id === 'first' ? first : second))
+        renderWith(repository)
+        await openEdition('Première')
+        await userEvent.type(within(panel()).getByLabelText('Titre'), ' modifiée')
+        return repository
+      }
+
+      function expectStillEditingTheFirstNote(): void {
+        expect((within(panel()).getByLabelText('Titre') as HTMLInputElement).value).toBe('Première modifiée')
+      }
+
+      it('stays on the note when the user refuses to change note', async () => {
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+        await renderTwoNotesAndEditTheFirst()
+
+        await userEvent.click(screen.getByRole('button', { name: /Seconde/ }))
+
+        expect(confirm).toHaveBeenCalledOnce()
+        expectStillEditingTheFirstNote()
+      })
+
+      it('changes note when the user accepts to lose the modifications', async () => {
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+        await renderTwoNotesAndEditTheFirst()
+
+        await userEvent.click(screen.getByRole('button', { name: /Seconde/ }))
+
+        expect(confirm).toHaveBeenCalledOnce()
+        within(panel()).getByRole('heading', { name: 'Seconde' })
+      })
+
+      it('asks before closing the panel with a click on the note, the close button or Escape', async () => {
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+        await renderTwoNotesAndEditTheFirst()
+
+        await userEvent.click(screen.getByRole('button', { name: /^Première/ }))
+        await userEvent.click(within(panel()).getByRole('button', { name: 'Fermer le détail' }))
+        await userEvent.keyboard('{Escape}')
+
+        expect(confirm).toHaveBeenCalledTimes(3)
+        expectStillEditingTheFirstNote()
+      })
+
+      it('does not ask when the modifications are undone', async () => {
+        const confirm = vi.spyOn(window, 'confirm')
+        await renderTwoNotesAndEditTheFirst()
+        const titleField = within(panel()).getByLabelText('Titre')
+
+        await userEvent.clear(titleField)
+        await userEvent.type(titleField, 'Première')
+        await userEvent.click(screen.getByRole('button', { name: /Seconde/ }))
+
+        expect(confirm).not.toHaveBeenCalled()
+        within(panel()).getByRole('heading', { name: 'Seconde' })
+      })
+
+      it('does not ask for the cancel button, which is already an explicit choice', async () => {
+        const confirm = vi.spyOn(window, 'confirm')
+        await renderTwoNotesAndEditTheFirst()
+
+        await userEvent.click(within(panel()).getByRole('button', { name: 'Annuler' }))
+
+        expect(confirm).not.toHaveBeenCalled()
+        within(panel()).getByRole('button', { name: 'Modifier' })
+      })
+
+      it('does not ask after saving', async () => {
+        const confirm = vi.spyOn(window, 'confirm')
+        const repository = await renderTwoNotesAndEditTheFirst()
+        repository.update.mockResolvedValue(aNote({ id: 'first', title: 'Première modifiée' }))
+
+        await userEvent.click(within(panel()).getByRole('button', { name: 'Enregistrer' }))
+        await within(panel()).findByRole('button', { name: 'Modifier' })
+        await userEvent.click(screen.getByRole('button', { name: /Seconde/ }))
+
+        expect(confirm).not.toHaveBeenCalled()
+      })
+
+      it('keeps the edition without asking when another idea is created, since nothing is lost', async () => {
+        const confirm = vi.spyOn(window, 'confirm')
+        const repository = await renderTwoNotesAndEditTheFirst()
+        repository.add.mockResolvedValue(aNote({ id: 'new', title: 'Autre idée' }))
+        const creationForm = screen.getByRole('region', { name: 'Nouvelle idée' })
+
+        await userEvent.type(within(creationForm).getByLabelText('Titre'), 'Autre idée')
+        await userEvent.click(within(creationForm).getByRole('button', { name: "Créer l'idée" }))
+
+        await within(screen.getByRole('list')).findByText('Autre idée')
+        expect(confirm).not.toHaveBeenCalled()
+        expectStillEditingTheFirstNote()
+      })
+    })
+
     it('leaves the edition when another note is selected', async () => {
       const repository = createFakeNoteRepository()
       const first = aNote({ id: 'first', title: 'Première' })

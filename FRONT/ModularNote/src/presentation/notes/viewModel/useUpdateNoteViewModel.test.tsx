@@ -78,6 +78,20 @@ describe('useUpdateNoteViewModel', () => {
     expect(onSaved).not.toHaveBeenCalled()
   })
 
+  it('tells whether the values differ from the saved note', () => {
+    const { wrapper } = createTestContext(createFakeNoteRepository())
+    const note = aNote({ title: 'Une idée', description: null })
+    const { result } = renderHook(() => useUpdateNoteViewModel(note, () => {}), { wrapper })
+
+    expect(result.current.hasUnsavedChanges).toBe(false)
+    act(() => result.current.changeDescription('D'))
+    expect(result.current.hasUnsavedChanges).toBe(true)
+    act(() => result.current.changeDescription(''))
+    expect(result.current.hasUnsavedChanges).toBe(false)
+    act(() => result.current.changeTitle('Une autre idée'))
+    expect(result.current.hasUnsavedChanges).toBe(true)
+  })
+
   it('clears the error as soon as the user edits a field', async () => {
     const { wrapper } = createTestContext(createFakeNoteRepository())
     const { result } = renderHook(() => useUpdateNoteViewModel(aNote({ title: '' }), () => {}), { wrapper })

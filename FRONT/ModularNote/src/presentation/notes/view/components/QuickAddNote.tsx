@@ -1,5 +1,6 @@
 import type { ChangeEvent, JSX, KeyboardEvent } from 'react'
 import { ErrorMessage } from '../../../core/components/ErrorMessage'
+import { useUnsavedChanges } from '../../../core/unsavedChanges/UnsavedChangesContext'
 import { formatDate } from '../../../core/util/formatDate'
 import { NOTE_TITLE_MAX_LENGTH } from '../../../../domain/notes/entity/models/Note'
 import type { Note } from '../../../../domain/notes/entity/models/Note'
@@ -14,6 +15,7 @@ import styles from './QuickAddNote.module.css'
  */
 export function QuickAddNote(): JSX.Element {
   const viewModel: AddNoteViewModel = useAddNoteViewModel()
+  useUnsavedChanges(viewModel.hasUnsavedInput)
 
   function handleChange(event: ChangeEvent<HTMLInputElement>): void {
     viewModel.changeTitle(event.target.value)

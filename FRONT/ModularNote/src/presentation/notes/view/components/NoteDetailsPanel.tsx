@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import { Button } from '../../../core/components/Button'
 import { ErrorMessage } from '../../../core/components/ErrorMessage'
+import { confirmDiscardChanges } from '../../../core/util/confirmDiscardChanges'
 import { formatDate } from '../../../core/util/formatDate'
 import type { NoteDetailsViewModel } from '../../viewModel/useNoteDetailsViewModel'
 import { useNoteDetailsViewModel } from '../../viewModel/useNoteDetailsViewModel'
@@ -16,6 +17,10 @@ type NoteDetailsPanelProps = {
   noteId: string
   /** Called when the user closes the panel (close button or Escape) */
   onClose: () => void
+  /** True when the edition of the note holds unsaved modifications */
+  hasUnsavedEdit: boolean
+  /** Called when the edition starts or stops holding unsaved modifications, with the new state */
+  onUnsavedEditChange: (hasUnsavedEdit: boolean) => void
 }
 
 /**
@@ -23,7 +28,12 @@ type NoteDetailsPanelProps = {
  * @param props - The note to show and what to do when the panel is closed
  * @returns The panel
  */
-export function NoteDetailsPanel({ noteId, onClose }: NoteDetailsPanelProps): JSX.Element {
+export function NoteDetailsPanel({
+  noteId,
+  onClose,
+  hasUnsavedEdit,
+  onUnsavedEditChange,
+}: NoteDetailsPanelProps): JSX.Element {
   const viewModel: NoteDetailsViewModel = useNoteDetailsViewModel(noteId)
   const [isEditing, setIsEditing] = useState<boolean>(false)
 
@@ -32,16 +42,18 @@ export function NoteDetailsPanel({ noteId, onClose }: NoteDetailsPanelProps): JS
       if (event.key !== 'Escape') {
         return
       }
-      // While editing, Escape only gives up the edition: the panel stays open
-      if (isEditing) {
-        setIsEditing(false)
-      } else {
+      if (!isEditing) {
         onClose()
+        return
+      }
+      // While editing, Escape only gives up the edition: the panel stays open
+      if (!hasUnsavedEdit || confirmDiscardChanges()) {
+        setIsEditing(false)
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return (): void => document.removeEventListener('keydown', handleKeyDown)
-  }, [isEditing, onClose])
+  }, [isEditing, hasUnsavedEdit, onClose])
 
   return (
     <aside className={styles.panel} aria-label="Détails de l'idée">
@@ -58,6 +70,7 @@ export function NoteDetailsPanel({ noteId, onClose }: NoteDetailsPanelProps): JS
           note={viewModel.note}
           onSaved={(): void => setIsEditing(false)}
           onCancel={(): void => setIsEditing(false)}
+          onUnsavedChange={onUnsavedEditChange}
         />
       ) : (
         <>
