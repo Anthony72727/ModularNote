@@ -1,0 +1,34 @@
+.page {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  padding: 18vh 16px 48px;
+  overflow-y: auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding-top: 10vh;
+  }
+}
