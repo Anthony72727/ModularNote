@@ -1,4 +1,7 @@
 import type { JSX } from 'react'
+import { ErrorMessage } from '../../core/components/ErrorMessage'
+import type { DeleteNoteViewModel } from '../viewModel/useDeleteNoteViewModel'
+import { useDeleteNoteViewModel } from '../viewModel/useDeleteNoteViewModel'
 import type { NotesViewModel } from '../viewModel/useNotesViewModel'
 import { useNotesViewModel } from '../viewModel/useNotesViewModel'
 import { NoteDetailsPanel } from './components/NoteDetailsPanel'
@@ -12,6 +15,7 @@ import styles from './NotesPage.module.css'
  */
 export function NotesPage(): JSX.Element {
   const viewModel: NotesViewModel = useNotesViewModel()
+  const deleteViewModel: DeleteNoteViewModel = useDeleteNoteViewModel(viewModel.deselectNote)
 
   return (
     <div className={styles.page}>
@@ -30,6 +34,12 @@ export function NotesPage(): JSX.Element {
           {!viewModel.isLoading && viewModel.loadError === null && <span className={styles.count}>{viewModel.notes.length}</span>}
         </header>
 
+        {deleteViewModel.error !== null && (
+          <div className={styles.deleteError}>
+            <ErrorMessage>{deleteViewModel.error}</ErrorMessage>
+          </div>
+        )}
+
         <NoteList
           notes={viewModel.notes}
           isLoading={viewModel.isLoading}
@@ -37,6 +47,8 @@ export function NotesPage(): JSX.Element {
           selectedNoteId={viewModel.selectedNoteId}
           onSelect={viewModel.toggleNote}
           onRetry={viewModel.retry}
+          onDelete={deleteViewModel.requestDeletion}
+          isDeleting={deleteViewModel.isDeleting}
         />
 
         {viewModel.selectedNoteId !== null && (

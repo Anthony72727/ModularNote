@@ -59,6 +59,20 @@ describe('HttpClient', () => {
     })
   })
 
+  it('DELETE: sends no body and resolves on 204 No Content', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(new HttpClient('/api').delete('/notes/1')).resolves.toBeUndefined()
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/notes/1', {
+      method: 'DELETE',
+      headers: undefined,
+      body: undefined,
+      signal: undefined,
+    })
+  })
+
   it('returns undefined on 204 No Content', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })))
 

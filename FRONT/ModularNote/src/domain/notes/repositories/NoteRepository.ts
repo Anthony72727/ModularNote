@@ -37,4 +37,12 @@ export interface NoteRepository {
    * @throws NoteRejectedError if the server refuses the note
    */
   update(id: string, note: NewNote): Promise<Note>
+
+  /**
+   * Delete a note
+   * @param id - Id of the note to delete
+   * @returns Nothing once the note is deleted
+   * @throws NoteNotFoundError if the note does not exist anymore
+   */
+  delete(id: string): Promise<void>
 }

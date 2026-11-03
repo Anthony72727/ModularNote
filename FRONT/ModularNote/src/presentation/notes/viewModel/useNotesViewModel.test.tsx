@@ -41,6 +41,20 @@ describe('useNotesViewModel', () => {
     expect(result.current.selectedNoteId).toBeNull()
   })
 
+  it('closes the details of a removed note only if they are open', () => {
+    const repository = createFakeNoteRepository()
+    repository.getAll.mockResolvedValue([aNote({ id: 'abc' })])
+    const { wrapper } = createTestContext(repository)
+    const { result } = renderHook(() => useNotesViewModel(), { wrapper })
+    act(() => result.current.toggleNote('abc'))
+
+    act(() => result.current.deselectNote('other'))
+    expect(result.current.selectedNoteId).toBe('abc')
+
+    act(() => result.current.deselectNote('abc'))
+    expect(result.current.selectedNoteId).toBeNull()
+  })
+
   it('shows an error when the notes cannot be loaded, and loads them again on retry', async () => {
     const repository = createFakeNoteRepository()
     repository.getAll.mockRejectedValueOnce(new ApiError(500, 'boom')).mockResolvedValue([aNote()])

@@ -1,9 +1,11 @@
 import { HttpNoteRepository } from '../../data/notes/repositories/HttpNoteRepository'
 import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
+import { DeleteNoteUseCaseImpl } from '../../domain/notes/interactors/DeleteNoteUseCaseImpl'
 import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
 import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
 import { UpdateNoteUseCaseImpl } from '../../domain/notes/interactors/UpdateNoteUseCaseImpl'
 import type { AddNoteUseCase } from '../../domain/notes/interactors/AddNoteUseCase'
+import type { DeleteNoteUseCase } from '../../domain/notes/interactors/DeleteNoteUseCase'
 import type { GetNoteByIdUseCase } from '../../domain/notes/interactors/GetNoteByIdUseCase'
 import type { GetNotesUseCase } from '../../domain/notes/interactors/GetNotesUseCase'
 import type { UpdateNoteUseCase } from '../../domain/notes/interactors/UpdateNoteUseCase'
@@ -22,6 +24,8 @@ export type Dependencies = {
   addNote: AddNoteUseCase
   /** Validate and save the modifications of a note */
   updateNote: UpdateNoteUseCase
+  /** Delete a note */
+  deleteNote: DeleteNoteUseCase
 }
 
 /**
@@ -37,5 +41,6 @@ export function createDependencies(): Dependencies {
     getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
     addNote: new AddNoteUseCaseImpl(noteRepository),
     updateNote: new UpdateNoteUseCaseImpl(noteRepository),
+    deleteNote: new DeleteNoteUseCaseImpl(noteRepository),
   }
 }
