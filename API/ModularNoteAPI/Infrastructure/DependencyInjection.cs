@@ -31,6 +31,8 @@ namespace Infrastructure
 
             services.AddDbContext<ModularNoteDbContext>(options => options.UseSqlite(connectionString));
             services.AddScoped<INoteRepository, EfNoteRepository>();
+            services.AddScoped<INoteLinkRepository, EfNoteLinkRepository>();
+            services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
             return services;
         }

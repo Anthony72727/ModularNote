@@ -1,3 +1,4 @@
+using Application.Links.Exceptions;
 using Application.Notes.DTOs;
 
 namespace Application.Notes.Abstractions.UseCases
@@ -8,11 +9,12 @@ namespace Application.Notes.Abstractions.UseCases
     public interface IAddNoteUseCase
     {
         /// <summary>
-        /// Execute the use case of adding a note
+        /// Execute the use case of adding a note and its links: either all of them are saved, or nothing is
         /// </summary>
         /// <param name="request">The data of the note to add</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>The added note</returns>
+        /// <exception cref="LinkedNoteNotFoundException">At least one of the notes to link does not exist</exception>
         Task<NoteDto> ExecuteAsync(AddNoteRequestDto request, CancellationToken cancellationToken = default);
     }
 }

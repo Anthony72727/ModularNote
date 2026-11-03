@@ -46,6 +46,15 @@ namespace Infrastructure.Repositories
         }
 
         /// <inheritdoc/>
+        public async Task<List<Guid>> GetExistingIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Notes
+                .Where(n => ids.Contains(n.Id))
+                .Select(n => n.Id)
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> UpdateAsync(Note note, CancellationToken cancellationToken = default)
         {
             // The notes are read without tracking: the note has to be attached to the context again

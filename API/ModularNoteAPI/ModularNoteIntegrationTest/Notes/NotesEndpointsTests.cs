@@ -329,6 +329,73 @@ public class NotesEndpointsTests : IClassFixture<ModularNoteApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    // ---------- Links ----------
+
+    [Fact]
+    public async Task AddNote_WithLinkedNotes_LinksThemInBothDirections()
+    {
+        var first = await AddNoteAsync(_client, "Première");
+        var second = await AddNoteAsync(_client, "Seconde");
+
+        var response = await _client.PostAsJsonAsync(NotesUrl, new { title = "Idée", linkedNoteIds = new[] { first.Id, second.Id, first.Id } });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = await response.Content.ReadFromJsonAsync<NoteDto>();
+        var links = await _client.GetFromJsonAsync<GetNotesResponseDto>($"{NotesUrl}/{created!.Id}/links");
+        Assert.Equal(new[] { first.Id, second.Id }, links!.Notes.Select(note => note.Id));
+        var reverseLinks = await _client.GetFromJsonAsync<GetNotesResponseDto>($"{NotesUrl}/{first.Id}/links");
+        Assert.Equal(created.Id, Assert.Single(reverseLinks!.Notes).Id);
+    }
+
+    [Fact]
+    public async Task AddNote_WithNullLinkedNotes_Returns201WithoutLink()
+    {
+        var response = await _client.PostAsJsonAsync(NotesUrl, new { title = "Idée", linkedNoteIds = (Guid[]?)null });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = await response.Content.ReadFromJsonAsync<NoteDto>();
+        var links = await _client.GetFromJsonAsync<GetNotesResponseDto>($"{NotesUrl}/{created!.Id}/links");
+        Assert.Empty(links!.Notes);
+    }
+
+    [Fact]
+    public async Task AddNote_WithMissingLinkedNote_Returns404NamingItAndCreatesNothing()
+    {
+        var existing = await AddNoteAsync(_client, "Existante");
+        var missingId = Guid.NewGuid();
+        var title = $"Jamais créée {Guid.NewGuid()}";
+
+        var response = await _client.PostAsJsonAsync(NotesUrl, new { title, linkedNoteIds = new[] { existing.Id, missingId } });
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound, $"These linked notes were not found: {missingId}.");
+        var notes = await _client.GetFromJsonAsync<GetNotesResponseDto>(NotesUrl);
+        Assert.DoesNotContain(notes!.Notes, note => note.Title == title);
+        var links = await _client.GetFromJsonAsync<GetNotesResponseDto>($"{NotesUrl}/{existing.Id}/links");
+        Assert.Empty(links!.Notes);
+    }
+
+    [Fact]
+    public async Task GetNoteLinks_UnknownId_Returns404ProblemDetails()
+    {
+        var response = await _client.GetAsync($"{NotesUrl}/{Guid.NewGuid()}/links");
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound, "The note was not found.");
+    }
+
+    [Fact]
+    public async Task DeleteNote_WithLinks_DeletesTheLinksAndKeepsTheOtherNote()
+    {
+        var existing = await AddNoteAsync(_client, "Existante");
+        var postResponse = await _client.PostAsJsonAsync(NotesUrl, new { title = "Idée", linkedNoteIds = new[] { existing.Id } });
+        var created = await postResponse.Content.ReadFromJsonAsync<NoteDto>();
+
+        var response = await _client.DeleteAsync($"{NotesUrl}/{created!.Id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var links = await _client.GetFromJsonAsync<GetNotesResponseDto>($"{NotesUrl}/{existing.Id}/links");
+        Assert.Empty(links!.Notes);
+    }
+
     // ---------- Helpers ----------
 
     private static async Task<NoteDto> AddNoteAsync(HttpClient client, string title, string? description = null)
