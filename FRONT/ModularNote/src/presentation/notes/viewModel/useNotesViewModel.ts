@@ -33,6 +33,8 @@ export type NotesViewModel = {
   toggleNote: (id: string) => void
   /** Close the details panel; unsaved modifications of the selected note must be given up first */
   closeNote: () => void
+  /** Close the details of a note that does not exist anymore, without asking (receives the note's id) */
+  deselectNote: (id: string) => void
 }
 
 /**
@@ -71,6 +73,10 @@ export function useNotesViewModel(): NotesViewModel {
     setSelectedNoteId(null)
   }
 
+  function deselectNote(id: string): void {
+    setSelectedNoteId((current: string | null): string | null => (current === id ? null : current))
+  }
+
   return {
     notes,
     isLoading: notesQuery.isPending,
@@ -81,5 +87,6 @@ export function useNotesViewModel(): NotesViewModel {
     retry,
     toggleNote,
     closeNote,
+    deselectNote,
   }
 }

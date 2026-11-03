@@ -46,11 +46,29 @@ namespace Infrastructure.Repositories
         }
 
         /// <inheritdoc/>
-        public async Task UpdateAsync(Note note, CancellationToken cancellationToken = default)
+        public async Task<bool> UpdateAsync(Note note, CancellationToken cancellationToken = default)
         {
             // The notes are read without tracking: the note has to be attached to the context again
             _dbContext.Notes.Update(note);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // No row was updated: the note was deleted since it was read
+                return false;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            int deletedRows = await _dbContext.Notes
+                .Where(n => n.Id == id)
+                .ExecuteDeleteAsync(cancellationToken);
+            return deletedRows > 0;
         }
     }
 }

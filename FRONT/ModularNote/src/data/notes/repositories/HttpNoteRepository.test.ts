@@ -14,7 +14,7 @@ const noteDto: NoteDto = {
 }
 
 function createFakeHttpClient() {
-  const fake = { get: vi.fn(), post: vi.fn(), put: vi.fn() }
+  const fake = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() }
   return { fake, httpClient: fake as unknown as HttpClient }
 }
 
@@ -124,5 +124,32 @@ describe('HttpNoteRepository', () => {
     await expect(new HttpNoteRepository(httpClient).update('abc', { title: 'Titre', description: null })).rejects.toBe(
       failure,
     )
+  })
+
+  it('delete: sends DELETE /notes/{id}', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.delete.mockResolvedValue(undefined)
+
+    await new HttpNoteRepository(httpClient).delete('abc')
+
+    expect(fake.delete).toHaveBeenCalledExactlyOnceWith('/notes/abc')
+  })
+
+  it('delete: turns a 404 into NoteNotFoundError', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.delete.mockRejectedValue(new ApiError(404, 'The note was not found.'))
+
+    const error = await new HttpNoteRepository(httpClient).delete('abc').catch((caught: unknown) => caught)
+
+    expect(error).toBeInstanceOf(NoteNotFoundError)
+    expect((error as NoteNotFoundError).noteId).toBe('abc')
+  })
+
+  it('delete: lets the other errors go through', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    const failure = new ApiError(500, 'boom')
+    fake.delete.mockRejectedValue(failure)
+
+    await expect(new HttpNoteRepository(httpClient).delete('abc')).rejects.toBe(failure)
   })
 })

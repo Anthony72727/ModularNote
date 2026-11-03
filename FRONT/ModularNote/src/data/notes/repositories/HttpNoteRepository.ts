@@ -74,4 +74,16 @@ export class HttpNoteRepository implements NoteRepository {
       throw error
     }
   }
+
+  /** @inheritDoc */
+  async delete(id: string): Promise<void> {
+    try {
+      await this.httpClient.delete(`/notes/${encodeURIComponent(id)}`)
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 404) {
+        throw new NoteNotFoundError(id)
+      }
+      throw error
+    }
+  }
 }

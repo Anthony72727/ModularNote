@@ -15,6 +15,8 @@ export type FakeNoteRepository = {
   add: Mock<(note: NewNote) => Promise<Note>>
   /** Mock of NoteRepository.update */
   update: Mock<(id: string, note: NewNote) => Promise<Note>>
+  /** Mock of NoteRepository.delete */
+  delete: Mock<(id: string) => Promise<void>>
 } & NoteRepository
 
 /**
@@ -27,6 +29,7 @@ export function createFakeNoteRepository(): FakeNoteRepository {
     getById: vi.fn<(id: string, signal?: AbortSignal) => Promise<Note>>(),
     add: vi.fn<(note: NewNote) => Promise<Note>>(),
     update: vi.fn<(id: string, note: NewNote) => Promise<Note>>(),
+    delete: vi.fn<(id: string) => Promise<void>>(),
   }
 }
 

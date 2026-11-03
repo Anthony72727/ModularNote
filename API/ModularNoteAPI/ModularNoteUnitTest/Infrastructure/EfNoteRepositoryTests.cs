@@ -189,6 +189,90 @@ namespace ModularNoteUnitTest.Infrastructure
             Assert.Null(saved.UpdatedAt);
         }
 
+        [Fact]
+        public async Task UpdateAsync_ExistingNote_ReturnsTrue()
+        {
+            var note = Note.Create("Titre", null);
+            await SeedAsync(note);
+            using var dbContext = _database.CreateDbContext();
+            var repository = new EfNoteRepository(dbContext);
+            var found = await repository.GetByIdAsync(note.Id);
+
+            var updated = await repository.UpdateAsync(found!);
+
+            Assert.True(updated);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_NoteDeletedSinceItWasRead_ReturnsFalse()
+        {
+            var note = Note.Create("Titre", null);
+            await SeedAsync(note);
+            using var dbContext = _database.CreateDbContext();
+            var repository = new EfNoteRepository(dbContext);
+            var found = await repository.GetByIdAsync(note.Id);
+            found!.Update("Nouveau titre", null);
+
+            using (var otherContext = _database.CreateDbContext())
+            {
+                await new EfNoteRepository(otherContext).DeleteAsync(note.Id);
+            }
+            var updated = await repository.UpdateAsync(found);
+
+            Assert.False(updated);
+            using var readContext = _database.CreateDbContext();
+            Assert.Equal(0, await readContext.Notes.CountAsync());
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ExistingNote_DeletesOnlyThisNoteAndReturnsTrue()
+        {
+            var note = Note.Create("Idée", null);
+            var other = Note.Create("Autre", null);
+            await SeedAsync(note, other);
+
+            bool deleted;
+            using (var dbContext = _database.CreateDbContext())
+            {
+                deleted = await new EfNoteRepository(dbContext).DeleteAsync(note.Id);
+            }
+
+            Assert.True(deleted);
+            using var readContext = _database.CreateDbContext();
+            var remaining = await readContext.Notes.SingleAsync();
+            Assert.Equal(other.Id, remaining.Id);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_UnknownId_ReturnsFalseAndDeletesNothing()
+        {
+            await SeedAsync(Note.Create("Idée", null));
+            using var dbContext = _database.CreateDbContext();
+
+            var deleted = await new EfNoteRepository(dbContext).DeleteAsync(Guid.NewGuid());
+
+            Assert.False(deleted);
+            Assert.Equal(1, await dbContext.Notes.CountAsync());
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithCancelledToken_DoesNotDeleteTheNote()
+        {
+            var note = Note.Create("Idée", null);
+            await SeedAsync(note);
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            using (var dbContext = _database.CreateDbContext())
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => new EfNoteRepository(dbContext).DeleteAsync(note.Id, cancellation.Token));
+            }
+
+            using var readContext = _database.CreateDbContext();
+            Assert.Equal(1, await readContext.Notes.CountAsync());
+        }
+
         private async Task SeedAsync(params Note[] notes)
         {
             using var dbContext = _database.CreateDbContext();

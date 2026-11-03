@@ -16,14 +16,21 @@
   color: var(--color-text-muted);
 }
 
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .item {
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     'title date'
     'excerpt excerpt';
   gap: 2px 12px;
-  width: 100%;
   padding: 12px 14px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -32,6 +39,19 @@
   color: inherit;
   background: transparent;
   cursor: pointer;
+}
+
+.delete {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.delete:not(:disabled):hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 .item:hover {

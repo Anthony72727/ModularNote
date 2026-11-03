@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../../core/di/createTestContext.test-utils'
@@ -68,6 +68,155 @@ describe('NotesPage', () => {
     await userEvent.keyboard('{Escape}')
 
     expect(screen.queryByRole('complementary')).toBeNull()
+  })
+
+  describe('deleting a note', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    function renderWith(repository: ReturnType<typeof createFakeNoteRepository>): void {
+      const { wrapper } = createTestContext(repository)
+      render(<NotesPage />, { wrapper })
+    }
+
+    function rowOf(noteTitle: string): HTMLElement {
+      const row = within(screen.getByRole('list')).getByText(noteTitle).closest('li')
+      if (row === null) {
+        throw new Error(`No row for ${noteTitle}`)
+      }
+      return row
+    }
+
+    async function clickDelete(noteTitle: string): Promise<void> {
+      await within(await screen.findByRole('list')).findByText(noteTitle)
+      await userEvent.click(within(rowOf(noteTitle)).getByRole('button', { name: 'Supprimer' }))
+    }
+
+    it('links each delete button to the title of its note', async () => {
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([aNote({ id: 'abc', title: 'Une idée' })])
+      renderWith(repository)
+      await screen.findByText('Une idée')
+
+      const button = within(rowOf('Une idée')).getByRole('button', { name: 'Supprimer' })
+
+      expect(button.getAttribute('aria-describedby')).toBe('note-title-abc')
+      expect(document.getElementById('note-title-abc')?.textContent).toBe('Une idée')
+    })
+
+    it('removes the note from the list right away after the confirmation, without opening it', async () => {
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([
+        aNote({ id: 'first', title: 'Première' }),
+        aNote({ id: 'second', title: 'Seconde' }),
+      ])
+      repository.delete.mockResolvedValue()
+      renderWith(repository)
+
+      await clickDelete('Première')
+
+      await waitFor(() => expect(screen.queryByText('Première')).toBeNull())
+      screen.getByText('Seconde')
+      expect(confirm).toHaveBeenCalledExactlyOnceWith('Supprimer l\'idée "Première" ?')
+      expect(repository.delete).toHaveBeenCalledExactlyOnceWith('first')
+      expect(repository.getAll).toHaveBeenCalledOnce()
+      expect(screen.queryByRole('complementary')).toBeNull()
+    })
+
+    it('deletes nothing when the confirmation is refused', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(false)
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([aNote({ title: 'Une idée' })])
+      renderWith(repository)
+
+      await clickDelete('Une idée')
+
+      screen.getByText('Une idée')
+      expect(repository.delete).not.toHaveBeenCalled()
+    })
+
+    it('closes the details panel of the deleted note, without reading it again', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      const note = aNote({ id: 'abc', title: 'Une idée' })
+      repository.getAll.mockResolvedValue([note])
+      repository.getById.mockResolvedValue(note)
+      repository.delete.mockResolvedValue()
+      renderWith(repository)
+      await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
+      await waitFor(() => expect(repository.getById).toHaveBeenCalledOnce())
+
+      await clickDelete('Une idée')
+
+      await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull())
+      await screen.findByText(/Aucune idée pour l'instant/)
+      expect(repository.getById).toHaveBeenCalledOnce()
+    })
+
+    it('keeps the details panel of another note open', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      const first = aNote({ id: 'first', title: 'Première' })
+      const second = aNote({ id: 'second', title: 'Seconde' })
+      repository.getAll.mockResolvedValue([first, second])
+      repository.getById.mockResolvedValue(second)
+      repository.delete.mockResolvedValue()
+      renderWith(repository)
+      await userEvent.click(await screen.findByRole('button', { name: /Seconde/ }))
+
+      await clickDelete('Première')
+
+      await waitFor(() => expect(within(screen.getByRole('list')).queryByText('Première')).toBeNull())
+      within(screen.getByRole('complementary')).getByRole('heading', { name: 'Seconde' })
+    })
+
+    it('only asks to confirm the deletion when the note holds unsaved modifications', async () => {
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      const note = aNote({ id: 'abc', title: 'Une idée' })
+      repository.getAll.mockResolvedValue([note])
+      repository.getById.mockResolvedValue(note)
+      repository.delete.mockResolvedValue()
+      renderWith(repository)
+      await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
+      await userEvent.click(within(screen.getByRole('complementary')).getByRole('button', { name: 'Modifier' }))
+      await userEvent.type(within(screen.getByRole('complementary')).getByLabelText('Titre'), ' modifiée')
+
+      await clickDelete('Une idée')
+
+      await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull())
+      expect(confirm).toHaveBeenCalledOnce()
+    })
+
+    it('shows an explicit error and removes the note when it does not exist anymore', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([aNote({ id: 'abc', title: 'Une idée' })])
+      repository.delete.mockRejectedValue(new NoteNotFoundError('abc'))
+      renderWith(repository)
+
+      await clickDelete('Une idée')
+
+      const alert = await screen.findByRole('alert')
+      expect(alert.textContent).toBe("Cette idée n'existe plus.")
+      await screen.findByText(/Aucune idée pour l'instant/)
+    })
+
+    it('keeps the note and shows an error when the server fails', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([aNote({ title: 'Une idée' })])
+      repository.delete.mockRejectedValue(new ApiError(500, 'boom'))
+      renderWith(repository)
+
+      await clickDelete('Une idée')
+
+      const alert = await screen.findByRole('alert')
+      expect(alert.textContent).toBe('Le serveur a rencontré une erreur, réessaie dans un instant.')
+      screen.getByText('Une idée')
+    })
   })
 
   describe('editing a note', () => {

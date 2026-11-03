@@ -64,6 +64,17 @@ export class HttpClient {
     return this.send<TResponse>('PUT', path, body, signal)
   }
 
+  /**
+   * Send a DELETE request, without body
+   * @param path - Path under the base URL, e.g. "/notes/1"
+   * @param signal - Cancels the request when the caller does not need the result anymore
+   * @returns Nothing once the resource is deleted
+   * @throws ApiError if the status is not 2xx
+   */
+  delete(path: string, signal?: AbortSignal): Promise<void> {
+    return this.send<void>('DELETE', path, undefined, signal)
+  }
+
   private async send<TResponse>(
     method: HttpMethod,
     path: string,
