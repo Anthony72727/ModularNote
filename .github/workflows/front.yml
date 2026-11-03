@@ -1,4 +1,4 @@
-# CI du front (React + Vite) : install, lint, build.
+# CI du front (React + Vite) : install, lint, tests, build.
 #
 # ⚠️ Ce workflow est filtré par `paths` : il ne tourne que si le front change.
 # Si une branch protection exige ce check, une PR qui ne touche pas le front
@@ -48,6 +48,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Test
+        run: npm test
 
       - name: Build
         run: npm run build
