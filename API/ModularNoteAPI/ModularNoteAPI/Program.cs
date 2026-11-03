@@ -20,6 +20,7 @@ builder.Services.AddScoped<IAddNoteUseCase, AddNoteUseCase>();
 builder.Services.AddScoped<IGetNotesUseCase, GetNotesUseCase>();
 builder.Services.AddScoped<IGetNoteByIdUseCase, GetNoteByIdUseCase>();
 builder.Services.AddScoped<IUpdateNoteUseCase, UpdateNoteUseCase>();
+builder.Services.AddScoped<IDeleteNoteUseCase, DeleteNoteUseCase>();
 
 // Infrastructure (database + repositories)
 builder.Services.AddInfrastructure(builder.Configuration);

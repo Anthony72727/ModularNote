@@ -34,6 +34,15 @@ namespace Domain.Repositories
         /// </summary>
         /// <param name="note">The modified note</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests</param>
-        Task UpdateAsync(Note note, CancellationToken cancellationToken = default);
+        /// <returns>True if the note was saved, false if it does not exist anymore</returns>
+        Task<bool> UpdateAsync(Note note, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Delete a note from the database
+        /// </summary>
+        /// <param name="id">The id of the note to delete</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests</param>
+        /// <returns>True if the note was deleted, false if it does not exist</returns>
+        Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

@@ -41,6 +41,16 @@ namespace ModularNoteUnitTest.Application.Notes
         }
 
         [Fact]
+        public async Task ExecuteAsync_NoteDeletedBeforeSaving_ThrowsNoteNotFound()
+        {
+            var note = Note.Create("Titre", "Description");
+            _repository.Notes.Add(note);
+            _repository.NoteDeletedBeforeUpdate = true;
+
+            await Assert.ThrowsAsync<NoteNotFoundException>(() => _useCase.ExecuteAsync(note.Id, new UpdateNoteRequestDto { Title = "Nouveau titre" }));
+        }
+
+        [Fact]
         public async Task ExecuteAsync_WithInvalidTitle_ThrowsWithoutSaving()
         {
             var note = Note.Create("Titre", "Description");

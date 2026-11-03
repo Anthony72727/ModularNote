@@ -16,6 +16,7 @@ namespace ModularNoteAPI.Controllers
         private readonly IGetNoteByIdUseCase _getNoteByIdUseCase;
         private readonly IAddNoteUseCase _addNoteUseCase;
         private readonly IUpdateNoteUseCase _updateNoteUseCase;
+        private readonly IDeleteNoteUseCase _deleteNoteUseCase;
 
         /// <summary>
         /// Instantiate the controller
@@ -24,12 +25,14 @@ namespace ModularNoteAPI.Controllers
         /// <param name="getNoteByIdUseCase">Use case that gets a note by its id</param>
         /// <param name="addNoteUseCase">Use case that adds a note</param>
         /// <param name="updateNoteUseCase">Use case that updates a note</param>
-        public NotesController(IGetNotesUseCase getNotesUseCase, IGetNoteByIdUseCase getNoteByIdUseCase, IAddNoteUseCase addNoteUseCase, IUpdateNoteUseCase updateNoteUseCase)
+        /// <param name="deleteNoteUseCase">Use case that deletes a note</param>
+        public NotesController(IGetNotesUseCase getNotesUseCase, IGetNoteByIdUseCase getNoteByIdUseCase, IAddNoteUseCase addNoteUseCase, IUpdateNoteUseCase updateNoteUseCase, IDeleteNoteUseCase deleteNoteUseCase)
         {
             _getNotesUseCase = getNotesUseCase;
             _getNoteByIdUseCase = getNoteByIdUseCase;
             _addNoteUseCase = addNoteUseCase;
             _updateNoteUseCase = updateNoteUseCase;
+            _deleteNoteUseCase = deleteNoteUseCase;
         }
 
         /// <summary>
@@ -98,6 +101,23 @@ namespace ModularNoteAPI.Controllers
         {
             NoteDto response = await _updateNoteUseCase.ExecuteAsync(id, request, cancellationToken);
             return Ok(response);
+        }
+
+        /// <summary>
+        /// DELETE /api/notes/{id} : delete a note
+        /// </summary>
+        /// <param name="id">The id of the note to delete</param>
+        /// <param name="cancellationToken">Token to cancel the asynchronous operation</param>
+        /// <returns>204 once the note is deleted, or 404 if it does not exist</returns>
+        [HttpDelete("{id:guid}")]
+        [EndpointSummary("Delete a note")]
+        [EndpointDescription("Delete a note from the database")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> DeleteNote(Guid id, CancellationToken cancellationToken)
+        {
+            await _deleteNoteUseCase.ExecuteAsync(id, cancellationToken);
+            return NoContent();
         }
     }
 }

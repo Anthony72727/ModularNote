@@ -28,7 +28,12 @@ namespace Application.Notes.UseCases
             Note note = await _noteRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new NoteNotFoundException();
             note.Update(request.Title, request.Description);
-            await _noteRepository.UpdateAsync(note, cancellationToken);
+            bool updated = await _noteRepository.UpdateAsync(note, cancellationToken);
+            if (!updated)
+            {
+                // The note was deleted between its reading and its saving
+                throw new NoteNotFoundException();
+            }
             return NoteDto.FromNote(note);
         }
     }

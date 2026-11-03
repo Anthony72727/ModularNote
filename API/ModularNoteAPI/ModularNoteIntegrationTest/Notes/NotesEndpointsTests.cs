@@ -274,6 +274,61 @@ public class NotesEndpointsTests : IClassFixture<ModularNoteApiFactory>
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound, "The note was not found.");
     }
 
+    // ---------- DELETE /api/notes/{id} ----------
+
+    [Fact]
+    public async Task DeleteNote_ExistingNote_Returns204WithoutBody()
+    {
+        var created = await AddNoteAsync(_client, "Idée");
+
+        var response = await _client.DeleteAsync($"{NotesUrl}/{created.Id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Empty(await response.Content.ReadAsByteArrayAsync());
+    }
+
+    [Fact]
+    public async Task DeleteNote_ExistingNote_IsNotReturnedAnymore()
+    {
+        var created = await AddNoteAsync(_client, "Idée à supprimer");
+        var other = await AddNoteAsync(_client, "Idée à garder");
+
+        await _client.DeleteAsync($"{NotesUrl}/{created.Id}");
+
+        var getResponse = await _client.GetAsync($"{NotesUrl}/{created.Id}");
+        await AssertProblemDetailsAsync(getResponse, HttpStatusCode.NotFound, "The note was not found.");
+        var notes = await _client.GetFromJsonAsync<GetNotesResponseDto>(NotesUrl);
+        Assert.DoesNotContain(notes!.Notes, note => note.Id == created.Id);
+        Assert.Contains(notes.Notes, note => note.Id == other.Id);
+    }
+
+    [Fact]
+    public async Task DeleteNote_AlreadyDeleted_Returns404ProblemDetails()
+    {
+        var created = await AddNoteAsync(_client, "Idée");
+        await _client.DeleteAsync($"{NotesUrl}/{created.Id}");
+
+        var response = await _client.DeleteAsync($"{NotesUrl}/{created.Id}");
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound, "The note was not found.");
+    }
+
+    [Fact]
+    public async Task DeleteNote_UnknownId_Returns404ProblemDetails()
+    {
+        var response = await _client.DeleteAsync($"{NotesUrl}/{Guid.NewGuid()}");
+
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound, "The note was not found.");
+    }
+
+    [Fact]
+    public async Task DeleteNote_IdIsNotAGuid_Returns404()
+    {
+        var response = await _client.DeleteAsync($"{NotesUrl}/not-a-guid");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     // ---------- Helpers ----------
 
     private static async Task<NoteDto> AddNoteAsync(HttpClient client, string title, string? description = null)

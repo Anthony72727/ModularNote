@@ -12,6 +12,11 @@ namespace ModularNoteUnitTest.Application.Fakes
 
         public List<Note> UpdatedNotes { get; } = new();
 
+        /// <summary>
+        /// Simulates a note deleted between its reading and its saving
+        /// </summary>
+        public bool NoteDeletedBeforeUpdate { get; set; }
+
         public Task AddAsync(Note note, CancellationToken cancellationToken = default)
         {
             Notes.Add(note);
@@ -28,10 +33,20 @@ namespace ModularNoteUnitTest.Application.Fakes
             return Task.FromResult(Notes.FirstOrDefault(note => note.Id == id));
         }
 
-        public Task UpdateAsync(Note note, CancellationToken cancellationToken = default)
+        public Task<bool> UpdateAsync(Note note, CancellationToken cancellationToken = default)
         {
+            if (NoteDeletedBeforeUpdate)
+            {
+                return Task.FromResult(false);
+            }
+
             UpdatedNotes.Add(note);
-            return Task.CompletedTask;
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Notes.RemoveAll(note => note.Id == id) > 0);
         }
     }
 }
