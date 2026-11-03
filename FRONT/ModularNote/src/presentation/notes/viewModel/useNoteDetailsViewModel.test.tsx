@@ -28,6 +28,33 @@ describe('useNoteDetailsViewModel', () => {
     expect(result.current.error).toBeNull()
   })
 
+  it('reads the notes linked to the note', async () => {
+    const repository = createFakeNoteRepository()
+    const linked = [aNote({ id: 'linked' })]
+    repository.getById.mockResolvedValue(aNote({ id: 'abc' }))
+    repository.getLinkedNotes.mockResolvedValue(linked)
+    const { wrapper } = createTestContext(repository)
+
+    const { result } = renderHook(() => useNoteDetailsViewModel('abc'), { wrapper })
+
+    expect(result.current.isLoadingLinkedNotes).toBe(true)
+    await waitFor(() => expect(result.current.linkedNotes).toEqual(linked))
+    expect(result.current.isLoadingLinkedNotes).toBe(false)
+    expect(result.current.linkedNotesError).toBeNull()
+  })
+
+  it('shows an error without retrying when the linked notes of a missing note are read', async () => {
+    const repository = createFakeNoteRepository()
+    repository.getById.mockResolvedValue(aNote({ id: 'abc' }))
+    repository.getLinkedNotes.mockRejectedValue(new NoteNotFoundError('abc'))
+    const { wrapper } = createTestContext(repository)
+
+    const { result } = renderHook(() => useNoteDetailsViewModel('abc'), { wrapper })
+
+    await waitFor(() => expect(result.current.linkedNotesError).toBe("Cette idée n'existe plus."))
+    expect(repository.getLinkedNotes).toHaveBeenCalledOnce()
+  })
+
   it('shows an error without retrying when the note does not exist anymore', async () => {
     const repository = createFakeNoteRepository()
     repository.getById.mockRejectedValue(new NoteNotFoundError('abc'))

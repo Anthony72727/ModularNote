@@ -20,12 +20,14 @@ export function toNote(dto: NoteDto): Note {
 /**
  * Convert a validated note into the body of POST /api/notes
  * @param note - Note validated by the domain
+ * @param linkedNoteIds - Ids of the existing notes to link to the new note
  * @returns The JSON body of the request
  */
-export function toAddNoteRequestDto(note: NewNote): AddNoteRequestDto {
+export function toAddNoteRequestDto(note: NewNote, linkedNoteIds: string[]): AddNoteRequestDto {
   return {
     title: note.title,
     description: note.description,
+    linkedNoteIds,
   }
 }
 

@@ -37,6 +37,9 @@ export function useDeleteNoteViewModel(onNoteRemoved: (id: string) => void): Del
       notes?.filter((note: Note): boolean => note.id !== id),
     )
     queryClient.removeQueries({ queryKey: noteQueryKeys.detail(id) })
+    queryClient.removeQueries({ queryKey: noteQueryKeys.links(id) })
+    // The note has to disappear from the linked notes of the other notes
+    void queryClient.invalidateQueries({ queryKey: noteQueryKeys.allLinks })
   }
 
   const deleteNoteMutation: UseMutationResult<void, Error, string> = useMutation({

@@ -64,6 +64,24 @@ describe('useDeleteNoteViewModel', () => {
     expect(result.current.error).toBeNull()
   })
 
+  it('forgets the links of the note and refreshes those of the other notes', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const repository = createFakeNoteRepository()
+    repository.delete.mockResolvedValue()
+    const note = aNote({ id: 'abc' })
+    const onNoteRemoved = vi.fn()
+    const { queryClient, wrapper } = createTestContext(repository)
+    queryClient.setQueryData<Note[]>(noteQueryKeys.links('abc'), [])
+    queryClient.setQueryData<Note[]>(noteQueryKeys.links('other'), [note])
+    const { result } = renderHook(() => useDeleteNoteViewModel(onNoteRemoved), { wrapper })
+
+    act(() => result.current.requestDeletion(note))
+
+    await waitFor(() => expect(onNoteRemoved).toHaveBeenCalledOnce())
+    expect(queryClient.getQueryState(noteQueryKeys.links('abc'))).toBeUndefined()
+    expect(queryClient.getQueryState(noteQueryKeys.links('other'))?.isInvalidated).toBe(true)
+  })
+
   it('shows an explicit error and removes the note when it does not exist anymore', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     const repository = createFakeNoteRepository()

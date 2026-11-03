@@ -21,12 +21,23 @@ export interface NoteRepository {
   getById(id: string, signal?: AbortSignal): Promise<Note>
 
   /**
-   * Save a new note
+   * Read the notes linked to a note
+   * @param id - Id of the note
+   * @param signal - Cancels the reading when the caller does not need the result anymore
+   * @returns The linked notes, oldest first
+   * @throws NoteNotFoundError if the note does not exist
+   */
+  getLinkedNotes(id: string, signal?: AbortSignal): Promise<Note[]>
+
+  /**
+   * Save a new note and its links: either all of them are saved, or nothing is
    * @param note - Note already validated by the domain
+   * @param linkedNoteIds - Ids of the existing notes to link to the new note
    * @returns The saved note, with its id and creation date
    * @throws NoteRejectedError if the server refuses the note
+   * @throws LinkedNoteNotFoundError if a note to link does not exist anymore
    */
-  add(note: NewNote): Promise<Note>
+  add(note: NewNote, linkedNoteIds: string[]): Promise<Note>
 
   /**
    * Save the modifications of an existing note

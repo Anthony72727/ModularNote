@@ -2,10 +2,11 @@ import type { JSX } from 'react'
 import { useUnsavedChanges } from '../../../core/unsavedChanges/UnsavedChangesContext'
 import type { AddNoteViewModel } from '../../viewModel/useAddNoteViewModel'
 import { useAddNoteViewModel } from '../../viewModel/useAddNoteViewModel'
+import { LinkedNotesField } from './LinkedNotesField'
 import { NoteFormFields } from './NoteFormFields'
 
 /**
- * Full creation form of a note (title + description)
+ * Full creation form of a note (title + description + linked notes)
  * @returns The form
  */
 export function NoteForm(): JSX.Element {
@@ -24,6 +25,13 @@ export function NoteForm(): JSX.Element {
       onTitleChange={viewModel.changeTitle}
       onDescriptionChange={viewModel.changeDescription}
       onSubmit={viewModel.submit}
+      extraFields={
+        <LinkedNotesField
+          linkedNotes={viewModel.linkedNotes}
+          onAdd={viewModel.addLinkedNote}
+          onRemove={viewModel.removeLinkedNote}
+        />
+      }
     />
   )
 }

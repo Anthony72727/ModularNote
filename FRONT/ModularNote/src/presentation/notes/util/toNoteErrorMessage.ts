@@ -1,4 +1,5 @@
 import { ApiError } from '../../../core/http/ApiError'
+import { LinkedNoteNotFoundError } from '../../../domain/notes/entity/errors/LinkedNoteNotFoundError'
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
 import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import { NoteValidationError } from '../../../domain/notes/entity/errors/NoteValidationError'
@@ -17,6 +18,9 @@ export function toNoteErrorMessage(error: unknown): string {
   }
   if (error instanceof NoteNotFoundError) {
     return "Cette idée n'existe plus."
+  }
+  if (error instanceof LinkedNoteNotFoundError) {
+    return "Une des idées liées n'existe plus."
   }
   if (error instanceof NoteRejectedError) {
     return "L'idée est invalide, vérifie le titre et la description."

@@ -6,4 +6,6 @@ export type AddNoteRequestDto = {
   title: string
   /** Description of the note, null when there is none */
   description: string | null
+  /** Ids of the existing notes to link to the new note */
+  linkedNoteIds: string[]
 }

@@ -62,6 +62,8 @@ export function useUpdateNoteViewModel(note: Note, onSaved: () => void): UpdateN
         notes?.map((current: Note): Note => (current.id === saved.id ? saved : current)),
       )
       queryClient.setQueryData<Note>(noteQueryKeys.detail(saved.id), saved)
+      // The new title has to show up in the linked notes of the other notes
+      void queryClient.invalidateQueries({ queryKey: noteQueryKeys.allLinks })
     },
     onError: (error: Error): void => {
       if (error instanceof NoteNotFoundError) {

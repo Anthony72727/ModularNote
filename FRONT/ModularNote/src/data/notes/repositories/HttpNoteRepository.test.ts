@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../../../core/http/ApiError'
 import type { HttpClient } from '../../../core/http/HttpClient'
+import { LinkedNoteNotFoundError } from '../../../domain/notes/entity/errors/LinkedNoteNotFoundError'
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
 import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import type { NoteDto } from '../dtos/NoteDto'
@@ -62,9 +63,13 @@ describe('HttpNoteRepository', () => {
     const { fake, httpClient } = createFakeHttpClient()
     fake.post.mockResolvedValue(noteDto)
 
-    const note = await new HttpNoteRepository(httpClient).add({ title: 'Titre', description: 'Desc' })
+    const note = await new HttpNoteRepository(httpClient).add({ title: 'Titre', description: 'Desc' }, ['linked'])
 
-    expect(fake.post).toHaveBeenCalledExactlyOnceWith('/notes', { title: 'Titre', description: 'Desc' })
+    expect(fake.post).toHaveBeenCalledExactlyOnceWith('/notes', {
+      title: 'Titre',
+      description: 'Desc',
+      linkedNoteIds: ['linked'],
+    })
     expect(note.createdAt).toEqual(new Date('2026-10-26T10:00:00Z'))
   })
 
@@ -72,9 +77,36 @@ describe('HttpNoteRepository', () => {
     const { fake, httpClient } = createFakeHttpClient()
     fake.post.mockRejectedValue(new ApiError(400, 'Title must be non-empty.'))
 
-    await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null })).rejects.toBeInstanceOf(
+    await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null }, [])).rejects.toBeInstanceOf(
       NoteRejectedError,
     )
+  })
+
+  it('add: turns a 404 into LinkedNoteNotFoundError', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.post.mockRejectedValue(new ApiError(404, 'These linked notes were not found: abc.'))
+
+    await expect(
+      new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null }, ['abc']),
+    ).rejects.toBeInstanceOf(LinkedNoteNotFoundError)
+  })
+
+  it('getLinkedNotes: reads GET /notes/{id}/links and maps every note', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.get.mockResolvedValue({ notes: [noteDto] })
+    const controller = new AbortController()
+
+    const notes = await new HttpNoteRepository(httpClient).getLinkedNotes('abc', controller.signal)
+
+    expect(fake.get).toHaveBeenCalledExactlyOnceWith('/notes/abc/links', controller.signal)
+    expect(notes).toEqual([{ ...noteDto, createdAt: new Date('2026-10-26T10:00:00Z') }])
+  })
+
+  it('getLinkedNotes: turns a 404 into NoteNotFoundError', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.get.mockRejectedValue(new ApiError(404, 'The note was not found.'))
+
+    await expect(new HttpNoteRepository(httpClient).getLinkedNotes('abc')).rejects.toBeInstanceOf(NoteNotFoundError)
   })
 
   it('add: lets the other errors go through', async () => {
@@ -82,7 +114,7 @@ describe('HttpNoteRepository', () => {
     const failure = new ApiError(500, 'boom')
     fake.post.mockRejectedValue(failure)
 
-    await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null })).rejects.toBe(failure)
+    await expect(new HttpNoteRepository(httpClient).add({ title: 'Titre', description: null }, [])).rejects.toBe(failure)
   })
 
   it('update: sends PUT /notes/{id} and maps the saved note', async () => {
