@@ -20,7 +20,15 @@ export function App(): JSX.Element {
   return (
     <div className={styles.app}>
       <header className={styles.header}>
-        <h1 className={styles.brand}>ModularNote</h1>
+        <h1 className={styles.brand}>
+          <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+            <path className={styles.logoLinks} d="M11 20 23.6 9.6M11 20l13.8 4.2" />
+            <circle className={styles.logoKernel} cx="11" cy="20" r="6" />
+            <circle className={styles.logoLinked} cx="24" cy="9" r="3.5" />
+            <circle className={styles.logoIdea} cx="25" cy="24.5" r="3" />
+          </svg>
+          ModularNote
+        </h1>
         <nav aria-label="Navigation principale">
           <ul className={styles.nav}>
             <li>
