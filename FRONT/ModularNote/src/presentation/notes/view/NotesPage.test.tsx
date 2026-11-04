@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../../core/di/createTestContext.test-utils'
 import { ApiError } from '../../../core/http/ApiError'
@@ -15,41 +16,22 @@ beforeAll(() => {
 afterEach(cleanup)
 
 describe('NotesPage', () => {
-  it('shows a created note in the list right away and empties the form', async () => {
-    const repository = createFakeNoteRepository()
-    repository.getAll.mockResolvedValue([])
-    repository.add.mockResolvedValue(aNote({ id: 'new', title: 'Mon idée', description: 'Les détails' }))
-    const { wrapper } = createTestContext(repository)
-    render(<NotesPage />, { wrapper })
-    await screen.findByText(/Aucune idée pour l'instant/)
-
-    await userEvent.type(screen.getByLabelText('Titre'), 'Mon idée')
-    await userEvent.type(screen.getByLabelText(/Description/), 'Les détails')
-    await userEvent.click(screen.getByRole('button', { name: "Créer l'idée" }))
-
-    const list = await screen.findByRole('list')
-    within(list).getByText('Mon idée')
-    expect(repository.getAll).toHaveBeenCalledOnce()
-    expect((screen.getByLabelText('Titre') as HTMLInputElement).value).toBe('')
-    expect((screen.getByLabelText(/Description/) as HTMLTextAreaElement).value).toBe('')
-  })
-
   it('hides the note count and offers to retry when the notes cannot be loaded', async () => {
     const repository = createFakeNoteRepository()
     repository.getAll
       .mockRejectedValueOnce(new ApiError(500, 'boom'))
       .mockResolvedValue([aNote({ title: 'Une idée' })])
     const { wrapper } = createTestContext(repository)
-    render(<NotesPage />, { wrapper })
-    const listHeading = screen.getByRole('heading', { name: 'Mes idées' })
+    render(<MemoryRouter><NotesPage /></MemoryRouter>, { wrapper })
+    const listHeading = screen.getByRole('heading', { name: 'Toutes les idées' })
 
     await screen.findByRole('alert')
-    expect(listHeading.parentElement?.textContent).toBe('Mes idées')
+    expect(listHeading.parentElement?.textContent).toBe('Toutes les idées')
 
     await userEvent.click(screen.getByRole('button', { name: 'Réessayer' }))
 
     await screen.findByText('Une idée')
-    expect(listHeading.parentElement?.textContent).toBe('Mes idées1')
+    expect(listHeading.parentElement?.textContent).toBe('Toutes les idées1 idée')
   })
 
   it('opens the details of a note on click and closes them with Escape', async () => {
@@ -58,7 +40,7 @@ describe('NotesPage', () => {
     repository.getAll.mockResolvedValue([note])
     repository.getById.mockResolvedValue(note)
     const { wrapper } = createTestContext(repository)
-    render(<NotesPage />, { wrapper })
+    render(<MemoryRouter><NotesPage /></MemoryRouter>, { wrapper })
 
     await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
 
@@ -87,7 +69,7 @@ describe('NotesPage', () => {
       repository.getById.mockResolvedValue(note)
       repository.getLinkedNotes.mockResolvedValue([linked])
       const { wrapper } = createTestContext(repository)
-      render(<NotesPage />, { wrapper })
+      render(<MemoryRouter><NotesPage /></MemoryRouter>, { wrapper })
 
       await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
 
@@ -101,34 +83,11 @@ describe('NotesPage', () => {
       repository.getAll.mockResolvedValue([note])
       repository.getById.mockResolvedValue(note)
       const { wrapper } = createTestContext(repository)
-      render(<NotesPage />, { wrapper })
+      render(<MemoryRouter><NotesPage /></MemoryRouter>, { wrapper })
 
       await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
 
       await within(linksSection()).findByText('Aucune idée liée')
-    })
-
-    it('shows a new link in the open panel without reloading the page', async () => {
-      const repository = createFakeNoteRepository()
-      const note = aNote({ id: 'abc', title: 'Une idée' })
-      const created = aNote({ id: 'new', title: 'Nouvelle idée' })
-      repository.getAll.mockResolvedValue([note])
-      repository.getById.mockResolvedValue(note)
-      repository.getLinkedNotes.mockResolvedValueOnce([]).mockResolvedValue([created])
-      repository.add.mockResolvedValue(created)
-      const { wrapper } = createTestContext(repository)
-      render(<NotesPage />, { wrapper })
-      await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
-      await within(linksSection()).findByText('Aucune idée liée')
-      const form = screen.getByRole('region', { name: 'Nouvelle idée' })
-
-      await userEvent.type(within(form).getByLabelText('Titre'), 'Nouvelle idée')
-      await userEvent.type(within(form).getByLabelText(/Idées liées/), 'une')
-      await userEvent.click(await within(form).findByRole('button', { name: 'Une idée' }))
-      await userEvent.click(within(form).getByRole('button', { name: "Créer l'idée" }))
-
-      await within(linksSection()).findByText('Nouvelle idée')
-      expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Nouvelle idée', description: null }, ['abc'])
     })
   })
 
@@ -139,7 +98,7 @@ describe('NotesPage', () => {
 
     function renderWith(repository: ReturnType<typeof createFakeNoteRepository>): void {
       const { wrapper } = createTestContext(repository)
-      render(<NotesPage />, { wrapper })
+      render(<MemoryRouter><NotesPage /></MemoryRouter>, { wrapper })
     }
 
     function rowOf(noteTitle: string): HTMLElement {
@@ -294,7 +253,7 @@ describe('NotesPage', () => {
 
     function renderWith(repository: ReturnType<typeof createFakeNoteRepository>): void {
       const { wrapper } = createTestContext(repository)
-      render(<NotesPage />, { wrapper })
+      render(<MemoryRouter><NotesPage /></MemoryRouter>, { wrapper })
     }
 
     it('prefills the form, then shows the modifications in the list and the panel without reloading', async () => {
@@ -480,20 +439,6 @@ describe('NotesPage', () => {
         await userEvent.click(screen.getByRole('button', { name: /Seconde/ }))
 
         expect(confirm).not.toHaveBeenCalled()
-      })
-
-      it('keeps the edition without asking when another idea is created, since nothing is lost', async () => {
-        const confirm = vi.spyOn(window, 'confirm')
-        const repository = await renderTwoNotesAndEditTheFirst()
-        repository.add.mockResolvedValue(aNote({ id: 'new', title: 'Autre idée' }))
-        const creationForm = screen.getByRole('region', { name: 'Nouvelle idée' })
-
-        await userEvent.type(within(creationForm).getByLabelText('Titre'), 'Autre idée')
-        await userEvent.click(within(creationForm).getByRole('button', { name: "Créer l'idée" }))
-
-        await within(screen.getByRole('list')).findByText('Autre idée')
-        expect(confirm).not.toHaveBeenCalled()
-        expectStillEditingTheFirstNote()
       })
     })
 

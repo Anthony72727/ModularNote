@@ -20,8 +20,10 @@ type TextFieldProps = {
   placeholder?: string
   /** True to show the field as invalid */
   invalid?: boolean
-  /** Small text after the label, e.g. "(facultative)" */
+  /** Small text after the label, e.g. "· facultative" */
   hint?: string
+  /** True for the main field of a page: focused when it opens, with larger text and the kernel of the idea */
+  prominent?: boolean
 }
 
 /**
@@ -38,9 +40,15 @@ export function TextField({
   placeholder,
   invalid = false,
   hint,
+  prominent = false,
 }: TextFieldProps): JSX.Element {
   const id: string = useId()
-  const fieldClassName: string = [styles.field, multiline ? styles.multiline : '', invalid ? styles.invalid : '']
+  const fieldClassName: string = [
+    styles.field,
+    multiline ? styles.multiline : '',
+    prominent ? styles.prominent : '',
+    invalid ? styles.invalid : '',
+  ]
     .filter(Boolean)
     .join(' ')
 
@@ -57,7 +65,7 @@ export function TextField({
         </label>
         {maxLength !== undefined && (
           <span className={styles.counter}>
-            {value.length} / {maxLength}
+            {value.length}/{maxLength}
           </span>
         )}
       </div>
@@ -70,7 +78,7 @@ export function TextField({
           maxLength={maxLength}
           placeholder={placeholder}
           aria-invalid={invalid}
-          rows={8}
+          rows={5}
         />
       ) : (
         <input
@@ -82,6 +90,7 @@ export function TextField({
           maxLength={maxLength}
           placeholder={placeholder}
           aria-invalid={invalid}
+          autoFocus={prominent}
         />
       )}
     </div>

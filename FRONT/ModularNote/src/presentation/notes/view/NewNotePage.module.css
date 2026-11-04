@@ -1,0 +1,38 @@
+.page {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  padding: 48px 16px 64px;
+  overflow-y: auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heading {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  letter-spacing: -0.02em;
+}
+
+.intro {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .page {
+    height: auto;
+    padding-top: 24px;
+  }
+}

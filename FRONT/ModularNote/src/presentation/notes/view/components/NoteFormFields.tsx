@@ -34,6 +34,8 @@ type NoteFormFieldsProps = {
   onCancel?: () => void
   /** Additional fields, shown after the description */
   extraFields?: ReactNode
+  /** True when the title is the main field of the page */
+  prominentTitle?: boolean
 }
 
 /**
@@ -54,6 +56,7 @@ export function NoteFormFields({
   onSubmit,
   onCancel,
   extraFields,
+  prominentTitle = false,
 }: NoteFormFieldsProps): JSX.Element {
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
@@ -69,28 +72,29 @@ export function NoteFormFields({
         maxLength={NOTE_TITLE_MAX_LENGTH}
         placeholder="Une idée en quelques mots"
         invalid={invalidField === 'title'}
+        prominent={prominentTitle}
       />
       <TextField
         label="Description"
-        hint="(facultative)"
+        hint="· facultative"
         value={description}
         onChange={onDescriptionChange}
         maxLength={NOTE_DESCRIPTION_MAX_LENGTH}
-        placeholder="Détaille ton idée…"
+        placeholder="Développe l'idée, ajoute du contexte…"
         invalid={invalidField === 'description'}
         multiline
       />
       {extraFields}
       {error !== null && <ErrorMessage>{error}</ErrorMessage>}
       <div className={styles.actions}>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? submittingLabel : submitLabel}
-        </Button>
         {onCancel !== undefined && (
           <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             Annuler
           </Button>
         )}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? submittingLabel : submitLabel}
+        </Button>
       </div>
     </form>
   )

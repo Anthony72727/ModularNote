@@ -92,7 +92,7 @@ describe('QuickAddNote', () => {
     const { wrapper } = createTestContext(createFakeNoteRepository())
     render(<QuickAddNote />, { wrapper })
 
-    expect(screen.queryByLabelText(/Idées liées/)).toBeNull()
+    expect(screen.queryByLabelText(/Lier à d'autres idées/)).toBeNull()
   })
 
   it('keeps the text and shows an error when the note cannot be saved', async () => {

@@ -1,7 +1,9 @@
 import type { JSX } from 'react'
+import { Link } from 'react-router'
 import { Button } from '../../../core/components/Button'
 import { ErrorMessage } from '../../../core/components/ErrorMessage'
 import { formatDate } from '../../../core/util/formatDate'
+import { appPaths } from '../../../../core/router/appPaths'
 import type { Note } from '../../../../domain/notes/entity/models/Note'
 import styles from './NoteList.module.css'
 
@@ -67,20 +69,31 @@ export function NoteList({
 
   if (notes.length === 0) {
     return (
-      <p className={styles.state}>Aucune idée pour l'instant. Crée ta première note avec le formulaire.</p>
+      <div className={styles.state}>
+        <p>Aucune idée pour l'instant.</p>
+        <Link to={appPaths.newNote} className={styles.addLink}>
+          Ajouter une idée
+        </Link>
+      </div>
     )
   }
 
   return (
-    <ul className={styles.list}>
+    <div className={styles.scroll}>
+      <div className={styles.columns} aria-hidden="true">
+        <span className={styles.columnIdea}>Idée</span>
+        <span className={styles.columnDate}>Créée</span>
+        <span className={styles.columnActions} />
+      </div>
+      <ul className={styles.list}>
       {notes.map((note: Note): JSX.Element => {
         const isSelected: boolean = note.id === selectedNoteId
         const titleId: string = `note-title-${note.id}`
         return (
-          <li key={note.id} className={styles.row}>
+          <li key={note.id} className={isSelected ? `${styles.row} ${styles.selected}` : styles.row}>
             <button
               type="button"
-              className={isSelected ? `${styles.item} ${styles.selected}` : styles.item}
+              className={styles.item}
               aria-expanded={isSelected}
               onClick={(): void => onSelect(note.id)}
               ref={isSelected ? scrollIntoView : undefined}
@@ -107,6 +120,7 @@ export function NoteList({
           </li>
         )
       })}
-    </ul>
+      </ul>
+    </div>
   )
 }

@@ -6,11 +6,22 @@ import { LinkedNotesField } from './LinkedNotesField'
 import { NoteFormFields } from './NoteFormFields'
 
 /**
+ * Props of NoteForm
+ */
+type NoteFormProps = {
+  /** Called once the note is saved */
+  onCreated: () => void
+  /** Called when the user gives up */
+  onCancel: () => void
+}
+
+/**
  * Full creation form of a note (title + description + linked notes)
+ * @param props - What to do once the note is saved, or when the user gives up
  * @returns The form
  */
-export function NoteForm(): JSX.Element {
-  const viewModel: AddNoteViewModel = useAddNoteViewModel()
+export function NoteForm({ onCreated, onCancel }: NoteFormProps): JSX.Element {
+  const viewModel: AddNoteViewModel = useAddNoteViewModel(onCreated)
   useUnsavedChanges(viewModel.hasUnsavedInput)
 
   return (
@@ -25,6 +36,8 @@ export function NoteForm(): JSX.Element {
       onTitleChange={viewModel.changeTitle}
       onDescriptionChange={viewModel.changeDescription}
       onSubmit={viewModel.submit}
+      onCancel={onCancel}
+      prominentTitle
       extraFields={
         <LinkedNotesField
           linkedNotes={viewModel.linkedNotes}
