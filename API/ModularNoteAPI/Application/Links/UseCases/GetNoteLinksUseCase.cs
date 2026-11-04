@@ -28,8 +28,11 @@ namespace Application.Links.UseCases
         /// <inheritdoc />
         public async Task<GetNotesResponseDto> ExecuteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            _ = await _noteRepository.GetByIdAsync(id, cancellationToken)
-                ?? throw new NoteNotFoundException();
+            if (await _noteRepository.GetByIdAsync(id, cancellationToken) is null)
+            {
+                throw new NoteNotFoundException();
+            }
+
             List<Note> notes = await _noteLinkRepository.GetLinkedNotesAsync(id, cancellationToken);
             return new GetNotesResponseDto
             {
