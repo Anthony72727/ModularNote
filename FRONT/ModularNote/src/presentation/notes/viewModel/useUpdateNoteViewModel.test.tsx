@@ -30,6 +30,7 @@ describe('useUpdateNoteViewModel', () => {
     const onSaved = vi.fn()
     const { queryClient, wrapper } = createTestContext(repository)
     queryClient.setQueryData<Note[]>(noteQueryKeys.all, [other, note])
+    queryClient.setQueryData<Note[]>(noteQueryKeys.links('other'), [note])
     const { result } = renderHook(() => useUpdateNoteViewModel(note, onSaved), { wrapper })
 
     act(() => result.current.changeTitle('  Nouveau titre '))
@@ -42,6 +43,7 @@ describe('useUpdateNoteViewModel', () => {
     })
     expect(queryClient.getQueryData(noteQueryKeys.all)).toEqual([other, saved])
     expect(queryClient.getQueryData(noteQueryKeys.detail('abc'))).toBe(saved)
+    expect(queryClient.getQueryState(noteQueryKeys.links('other'))?.isInvalidated).toBe(true)
   })
 
   it('rejects a blank title without calling the API, keeps the input and points at the title', async () => {

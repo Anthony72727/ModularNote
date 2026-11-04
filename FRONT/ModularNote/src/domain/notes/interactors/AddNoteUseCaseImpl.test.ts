@@ -10,9 +10,9 @@ describe('AddNoteUseCaseImpl', () => {
     repository.add.mockResolvedValue(saved)
     const useCase = new AddNoteUseCaseImpl(repository)
 
-    const result = await useCase.execute('  Mon idée ', '   ')
+    const result = await useCase.execute('  Mon idée ', '   ', ['linked'])
 
-    expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null })
+    expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null }, ['linked'])
     expect(result).toBe(saved)
   })
 
@@ -20,7 +20,7 @@ describe('AddNoteUseCaseImpl', () => {
     const repository = createFakeNoteRepository()
     const useCase = new AddNoteUseCaseImpl(repository)
 
-    await expect(useCase.execute('   ', null)).rejects.toBeInstanceOf(NoteValidationError)
+    await expect(useCase.execute('   ', null, [])).rejects.toBeInstanceOf(NoteValidationError)
     expect(repository.add).not.toHaveBeenCalled()
   })
 
@@ -30,6 +30,6 @@ describe('AddNoteUseCaseImpl', () => {
     repository.add.mockRejectedValue(failure)
     const useCase = new AddNoteUseCaseImpl(repository)
 
-    await expect(useCase.execute('Titre', null)).rejects.toBe(failure)
+    await expect(useCase.execute('Titre', null, [])).rejects.toBe(failure)
   })
 })

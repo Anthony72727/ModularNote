@@ -145,6 +145,18 @@ namespace ModularNoteUnitTest.Infrastructure
         }
 
         [Fact]
+        public async Task GetExistingIdsAsync_ReturnsOnlyTheIdsOfExistingNotes()
+        {
+            var note = Note.Create("Idée", null);
+            await SeedAsync(note, Note.Create("Autre", null));
+            using var dbContext = _database.CreateDbContext();
+
+            var ids = await new EfNoteRepository(dbContext).GetExistingIdsAsync(new[] { note.Id, Guid.NewGuid() });
+
+            Assert.Equal(note.Id, Assert.Single(ids));
+        }
+
+        [Fact]
         public async Task UpdateAsync_NoteReadByTheRepository_SavesTheModifications()
         {
             var note = Note.Create("Titre", "Description");

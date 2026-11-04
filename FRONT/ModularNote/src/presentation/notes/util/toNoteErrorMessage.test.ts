@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError } from '../../../core/http/ApiError'
+import { LinkedNoteNotFoundError } from '../../../domain/notes/entity/errors/LinkedNoteNotFoundError'
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
 import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import { NoteValidationError } from '../../../domain/notes/entity/errors/NoteValidationError'
@@ -10,6 +11,7 @@ describe('toNoteErrorMessage', () => {
     [new NoteValidationError('title'), 'Le titre est obligatoire et ne doit pas dépasser 100 caractères.'],
     [new NoteValidationError('description'), 'La description ne doit pas dépasser 5000 caractères.'],
     [new NoteNotFoundError('abc'), "Cette idée n'existe plus."],
+    [new LinkedNoteNotFoundError(), "Une des idées liées n'existe plus."],
     [new NoteRejectedError(), "L'idée est invalide, vérifie le titre et la description."],
     [new ApiError(500, 'boom'), 'Le serveur a rencontré une erreur, réessaie dans un instant.'],
     [new TypeError('Failed to fetch'), 'Impossible de joindre le serveur, vérifie ta connexion.'],

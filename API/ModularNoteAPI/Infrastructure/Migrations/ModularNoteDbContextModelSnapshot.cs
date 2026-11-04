@@ -42,6 +42,43 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("Notes");
                 });
+
+            modelBuilder.Entity("Domain.Entities.NoteLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("NoteAId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("NoteBId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NoteBId");
+
+                    b.HasIndex("NoteAId", "NoteBId")
+                        .IsUnique();
+
+                    b.ToTable("NoteLinks");
+                });
+
+            modelBuilder.Entity("Domain.Entities.NoteLink", b =>
+                {
+                    b.HasOne("Domain.Entities.Note", null)
+                        .WithMany()
+                        .HasForeignKey("NoteAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Note", null)
+                        .WithMany()
+                        .HasForeignKey("NoteBId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 #pragma warning restore 612, 618
         }
     }

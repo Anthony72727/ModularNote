@@ -1,3 +1,4 @@
+using Application.Links.Abstractions.UseCases;
 using Application.Notes.Abstractions.UseCases;
 using Application.Notes.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ namespace ModularNoteAPI.Controllers
         private readonly IAddNoteUseCase _addNoteUseCase;
         private readonly IUpdateNoteUseCase _updateNoteUseCase;
         private readonly IDeleteNoteUseCase _deleteNoteUseCase;
+        private readonly IGetNoteLinksUseCase _getNoteLinksUseCase;
 
         /// <summary>
         /// Instantiate the controller
@@ -26,13 +28,15 @@ namespace ModularNoteAPI.Controllers
         /// <param name="addNoteUseCase">Use case that adds a note</param>
         /// <param name="updateNoteUseCase">Use case that updates a note</param>
         /// <param name="deleteNoteUseCase">Use case that deletes a note</param>
-        public NotesController(IGetNotesUseCase getNotesUseCase, IGetNoteByIdUseCase getNoteByIdUseCase, IAddNoteUseCase addNoteUseCase, IUpdateNoteUseCase updateNoteUseCase, IDeleteNoteUseCase deleteNoteUseCase)
+        /// <param name="getNoteLinksUseCase">Use case that gets the notes linked to a note</param>
+        public NotesController(IGetNotesUseCase getNotesUseCase, IGetNoteByIdUseCase getNoteByIdUseCase, IAddNoteUseCase addNoteUseCase, IUpdateNoteUseCase updateNoteUseCase, IDeleteNoteUseCase deleteNoteUseCase, IGetNoteLinksUseCase getNoteLinksUseCase)
         {
             _getNotesUseCase = getNotesUseCase;
             _getNoteByIdUseCase = getNoteByIdUseCase;
             _addNoteUseCase = addNoteUseCase;
             _updateNoteUseCase = updateNoteUseCase;
             _deleteNoteUseCase = deleteNoteUseCase;
+            _getNoteLinksUseCase = getNoteLinksUseCase;
         }
 
         /// <summary>
@@ -68,16 +72,34 @@ namespace ModularNoteAPI.Controllers
         }
 
         /// <summary>
-        /// POST /api/notes : add a new note
+        /// GET /api/notes/{id}/links : get the notes linked to a note
+        /// </summary>
+        /// <param name="id">The id of the note</param>
+        /// <param name="cancellationToken">Token to cancel the asynchronous operation</param>
+        /// <returns>The linked notes, or 404 if the note does not exist</returns>
+        [HttpGet("{id:guid}/links")]
+        [EndpointSummary("Get the notes linked to a note")]
+        [EndpointDescription("Get the notes linked to a note in the database, oldest first")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<GetNotesResponseDto>> GetNoteLinks(Guid id, CancellationToken cancellationToken)
+        {
+            GetNotesResponseDto response = await _getNoteLinksUseCase.ExecuteAsync(id, cancellationToken);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// POST /api/notes : add a new note, with its links to existing notes
         /// </summary>
         /// <param name="request">The note to add</param>
         /// <param name="cancellationToken">Token to cancel the asynchronous operation</param>
-        /// <returns>The added note, with its URL in the Location header</returns>
+        /// <returns>The added note, with its URL in the Location header, or 404 if a note to link does not exist</returns>
         [HttpPost]
         [EndpointSummary("Add a new note")]
-        [EndpointDescription("Add a new note to the database")]
+        [EndpointDescription("Add a new note to the database, linked to existing notes: if a link is invalid, nothing is saved")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<NoteDto>> AddNote(AddNoteRequestDto request, CancellationToken cancellationToken)
         {
             NoteDto response = await _addNoteUseCase.ExecuteAsync(request, cancellationToken);

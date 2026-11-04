@@ -33,6 +33,11 @@ namespace ModularNoteUnitTest.Application.Fakes
             return Task.FromResult(Notes.FirstOrDefault(note => note.Id == id));
         }
 
+        public Task<List<Guid>> GetExistingIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Notes.Where(note => ids.Contains(note.Id)).Select(note => note.Id).ToList());
+        }
+
         public Task<bool> UpdateAsync(Note note, CancellationToken cancellationToken = default)
         {
             if (NoteDeletedBeforeUpdate)

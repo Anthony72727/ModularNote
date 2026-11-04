@@ -6,6 +6,10 @@ type NoteQueryKeys = {
   all: readonly ['notes']
   /** Key of a single note (receives the note's id) */
   detail: (id: string) => readonly ['notes', 'detail', string]
+  /** Prefix of the keys of the linked notes of every note */
+  allLinks: readonly ['notes', 'links']
+  /** Key of the notes linked to a note (receives the note's id) */
+  links: (id: string) => readonly ['notes', 'links', string]
 }
 
 /**
@@ -14,4 +18,6 @@ type NoteQueryKeys = {
 export const noteQueryKeys: NoteQueryKeys = {
   all: ['notes'],
   detail: (id: string): readonly ['notes', 'detail', string] => ['notes', 'detail', id],
+  allLinks: ['notes', 'links'],
+  links: (id: string): readonly ['notes', 'links', string] => ['notes', 'links', id],
 }

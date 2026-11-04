@@ -11,8 +11,10 @@ export type FakeNoteRepository = {
   getAll: Mock<(signal?: AbortSignal) => Promise<Note[]>>
   /** Mock of NoteRepository.getById */
   getById: Mock<(id: string, signal?: AbortSignal) => Promise<Note>>
+  /** Mock of NoteRepository.getLinkedNotes */
+  getLinkedNotes: Mock<(id: string, signal?: AbortSignal) => Promise<Note[]>>
   /** Mock of NoteRepository.add */
-  add: Mock<(note: NewNote) => Promise<Note>>
+  add: Mock<(note: NewNote, linkedNoteIds: string[]) => Promise<Note>>
   /** Mock of NoteRepository.update */
   update: Mock<(id: string, note: NewNote) => Promise<Note>>
   /** Mock of NoteRepository.delete */
@@ -20,14 +22,16 @@ export type FakeNoteRepository = {
 } & NoteRepository
 
 /**
- * Create a repository whose methods return nothing until a test sets their result
+ * Create a repository whose methods return nothing until a test sets their result,
+ * except getLinkedNotes which finds no link: most tests open a note without caring about its links
  * @returns A repository whose methods are all mocks
  */
 export function createFakeNoteRepository(): FakeNoteRepository {
   return {
     getAll: vi.fn<(signal?: AbortSignal) => Promise<Note[]>>(),
     getById: vi.fn<(id: string, signal?: AbortSignal) => Promise<Note>>(),
-    add: vi.fn<(note: NewNote) => Promise<Note>>(),
+    getLinkedNotes: vi.fn<(id: string, signal?: AbortSignal) => Promise<Note[]>>().mockResolvedValue([]),
+    add: vi.fn<(note: NewNote, linkedNoteIds: string[]) => Promise<Note>>(),
     update: vi.fn<(id: string, note: NewNote) => Promise<Note>>(),
     delete: vi.fn<(id: string) => Promise<void>>(),
   }

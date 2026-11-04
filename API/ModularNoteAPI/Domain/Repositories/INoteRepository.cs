@@ -30,6 +30,14 @@ namespace Domain.Repositories
         Task<Note?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Find which of the given ids belong to an existing note
+        /// </summary>
+        /// <param name="ids">The ids to look for</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests</param>
+        /// <returns>The ids that belong to an existing note</returns>
+        Task<List<Guid>> GetExistingIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Save the modifications of an existing note in the database
         /// </summary>
         /// <param name="note">The modified note</param>

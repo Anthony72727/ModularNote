@@ -1,4 +1,4 @@
-import type { FormEvent, JSX } from 'react'
+import type { FormEvent, JSX, ReactNode } from 'react'
 import { Button } from '../../../core/components/Button'
 import { ErrorMessage } from '../../../core/components/ErrorMessage'
 import { TextField } from '../../../core/components/TextField'
@@ -32,6 +32,8 @@ type NoteFormFieldsProps = {
   onSubmit: () => void
   /** Called when the user gives up; the cancel button is only shown when this is set */
   onCancel?: () => void
+  /** Additional fields, shown after the description */
+  extraFields?: ReactNode
 }
 
 /**
@@ -51,6 +53,7 @@ export function NoteFormFields({
   onDescriptionChange,
   onSubmit,
   onCancel,
+  extraFields,
 }: NoteFormFieldsProps): JSX.Element {
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
@@ -77,6 +80,7 @@ export function NoteFormFields({
         invalid={invalidField === 'description'}
         multiline
       />
+      {extraFields}
       {error !== null && <ErrorMessage>{error}</ErrorMessage>}
       <div className={styles.actions}>
         <Button type="submit" disabled={isSubmitting}>

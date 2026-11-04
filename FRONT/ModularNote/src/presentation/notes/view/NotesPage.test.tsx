@@ -70,6 +70,68 @@ describe('NotesPage', () => {
     expect(screen.queryByRole('complementary')).toBeNull()
   })
 
+  describe('linked notes', () => {
+    function panel(): HTMLElement {
+      return screen.getByRole('complementary', { name: "Détails de l'idée" })
+    }
+
+    function linksSection(): HTMLElement {
+      return within(panel()).getByRole('region', { name: 'Idées liées' })
+    }
+
+    it('lists the linked notes of the open note', async () => {
+      const repository = createFakeNoteRepository()
+      const note = aNote({ id: 'abc', title: 'Une idée' })
+      const linked = aNote({ id: 'linked', title: 'Idée voisine' })
+      repository.getAll.mockResolvedValue([note, linked])
+      repository.getById.mockResolvedValue(note)
+      repository.getLinkedNotes.mockResolvedValue([linked])
+      const { wrapper } = createTestContext(repository)
+      render(<NotesPage />, { wrapper })
+
+      await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
+
+      await within(linksSection()).findByText('Idée voisine')
+      expect(repository.getLinkedNotes.mock.calls[0][0]).toBe('abc')
+    })
+
+    it('tells when the open note has no linked note', async () => {
+      const repository = createFakeNoteRepository()
+      const note = aNote({ id: 'abc', title: 'Une idée' })
+      repository.getAll.mockResolvedValue([note])
+      repository.getById.mockResolvedValue(note)
+      const { wrapper } = createTestContext(repository)
+      render(<NotesPage />, { wrapper })
+
+      await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
+
+      await within(linksSection()).findByText('Aucune idée liée')
+    })
+
+    it('shows a new link in the open panel without reloading the page', async () => {
+      const repository = createFakeNoteRepository()
+      const note = aNote({ id: 'abc', title: 'Une idée' })
+      const created = aNote({ id: 'new', title: 'Nouvelle idée' })
+      repository.getAll.mockResolvedValue([note])
+      repository.getById.mockResolvedValue(note)
+      repository.getLinkedNotes.mockResolvedValueOnce([]).mockResolvedValue([created])
+      repository.add.mockResolvedValue(created)
+      const { wrapper } = createTestContext(repository)
+      render(<NotesPage />, { wrapper })
+      await userEvent.click(await screen.findByRole('button', { name: /Une idée/ }))
+      await within(linksSection()).findByText('Aucune idée liée')
+      const form = screen.getByRole('region', { name: 'Nouvelle idée' })
+
+      await userEvent.type(within(form).getByLabelText('Titre'), 'Nouvelle idée')
+      await userEvent.type(within(form).getByLabelText(/Idées liées/), 'une')
+      await userEvent.click(await within(form).findByRole('button', { name: 'Une idée' }))
+      await userEvent.click(within(form).getByRole('button', { name: "Créer l'idée" }))
+
+      await within(linksSection()).findByText('Nouvelle idée')
+      expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Nouvelle idée', description: null }, ['abc'])
+    })
+  })
+
   describe('deleting a note', () => {
     afterEach(() => {
       vi.restoreAllMocks()
@@ -153,6 +215,7 @@ describe('NotesPage', () => {
       await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull())
       await screen.findByText(/Aucune idée pour l'instant/)
       expect(repository.getById).toHaveBeenCalledOnce()
+      expect(repository.getLinkedNotes).toHaveBeenCalledOnce()
     })
 
     it('keeps the details panel of another note open', async () => {

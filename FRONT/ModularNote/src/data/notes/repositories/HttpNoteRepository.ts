@@ -1,5 +1,6 @@
 import { ApiError } from '../../../core/http/ApiError'
 import type { HttpClient } from '../../../core/http/HttpClient'
+import { LinkedNoteNotFoundError } from '../../../domain/notes/entity/errors/LinkedNoteNotFoundError'
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
 import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import type { NewNote, Note } from '../../../domain/notes/entity/models/Note'
@@ -44,11 +45,33 @@ export class HttpNoteRepository implements NoteRepository {
   }
 
   /** @inheritDoc */
-  async add(note: NewNote): Promise<Note> {
+  async getLinkedNotes(id: string, signal?: AbortSignal): Promise<Note[]> {
     try {
-      const dto: NoteDto = await this.httpClient.post<NoteDto, AddNoteRequestDto>('/notes', toAddNoteRequestDto(note))
+      const response: GetNotesResponseDto = await this.httpClient.get<GetNotesResponseDto>(
+        `/notes/${encodeURIComponent(id)}/links`,
+        signal,
+      )
+      return response.notes.map(toNote)
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 404) {
+        throw new NoteNotFoundError(id)
+      }
+      throw error
+    }
+  }
+
+  /** @inheritDoc */
+  async add(note: NewNote, linkedNoteIds: string[]): Promise<Note> {
+    try {
+      const dto: NoteDto = await this.httpClient.post<NoteDto, AddNoteRequestDto>(
+        '/notes',
+        toAddNoteRequestDto(note, linkedNoteIds),
+      )
       return toNote(dto)
     } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 404) {
+        throw new LinkedNoteNotFoundError()
+      }
       if (error instanceof ApiError && error.status === 400) {
         throw new NoteRejectedError()
       }

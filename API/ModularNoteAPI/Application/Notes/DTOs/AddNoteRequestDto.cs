@@ -7,5 +7,10 @@ namespace Application.Notes.DTOs
     {
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+
+        /// <summary>
+        /// The ids of the existing notes to link to the new note, null or empty when there is none
+        /// </summary>
+        public List<Guid>? LinkedNoteIds { get; set; }
     }
 }

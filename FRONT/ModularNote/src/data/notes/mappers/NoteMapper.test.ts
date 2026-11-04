@@ -26,9 +26,10 @@ describe('NoteMapper', () => {
   })
 
   it('converts a new note into the request body', () => {
-    expect(toAddNoteRequestDto({ title: 'Titre', description: 'Desc' })).toEqual({
+    expect(toAddNoteRequestDto({ title: 'Titre', description: 'Desc' }, ['linked'])).toEqual({
       title: 'Titre',
       description: 'Desc',
+      linkedNoteIds: ['linked'],
     })
   })
 })

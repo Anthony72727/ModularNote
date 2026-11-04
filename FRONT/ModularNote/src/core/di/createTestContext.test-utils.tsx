@@ -3,6 +3,7 @@ import type { JSX, ReactNode } from 'react'
 import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
 import { DeleteNoteUseCaseImpl } from '../../domain/notes/interactors/DeleteNoteUseCaseImpl'
 import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
+import { GetNoteLinksUseCaseImpl } from '../../domain/notes/interactors/GetNoteLinksUseCaseImpl'
 import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
 import { UpdateNoteUseCaseImpl } from '../../domain/notes/interactors/UpdateNoteUseCaseImpl'
 import type { NoteRepository } from '../../domain/notes/repositories/NoteRepository'
@@ -32,6 +33,7 @@ export function createTestContext(noteRepository: NoteRepository): TestContext {
   const dependencies: Dependencies = {
     getNotes: new GetNotesUseCaseImpl(noteRepository),
     getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
+    getNoteLinks: new GetNoteLinksUseCaseImpl(noteRepository),
     addNote: new AddNoteUseCaseImpl(noteRepository),
     updateNote: new UpdateNoteUseCaseImpl(noteRepository),
     deleteNote: new DeleteNoteUseCaseImpl(noteRepository),

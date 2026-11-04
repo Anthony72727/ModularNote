@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type { JSX } from 'react'
 import { Button } from '../../../core/components/Button'
 import { ErrorMessage } from '../../../core/components/ErrorMessage'
 import { confirmDiscardChanges } from '../../../core/util/confirmDiscardChanges'
 import { formatDate } from '../../../core/util/formatDate'
+import type { Note } from '../../../../domain/notes/entity/models/Note'
 import type { NoteDetailsViewModel } from '../../viewModel/useNoteDetailsViewModel'
 import { useNoteDetailsViewModel } from '../../viewModel/useNoteDetailsViewModel'
 import { EditNoteForm } from './EditNoteForm'
@@ -24,7 +25,8 @@ type NoteDetailsPanelProps = {
 }
 
 /**
- * Panel that slides up from the bottom of the list and shows the selected note, which can be edited from there
+ * Panel that slides up from the bottom of the list and shows the selected note and its linked notes;
+ * the note can be edited from there
  * @param props - The note to show and what to do when the panel is closed
  * @returns The panel
  */
@@ -36,6 +38,7 @@ export function NoteDetailsPanel({
 }: NoteDetailsPanelProps): JSX.Element {
   const viewModel: NoteDetailsViewModel = useNoteDetailsViewModel(noteId)
   const [isEditing, setIsEditing] = useState<boolean>(false)
+  const linksHeadingId: string = useId()
 
   useEffect((): (() => void) => {
     function handleKeyDown(event: KeyboardEvent): void {
@@ -87,6 +90,25 @@ export function NoteDetailsPanel({
               ) : (
                 <p className={styles.description}>{viewModel.note.description}</p>
               )}
+              <section className={styles.links} aria-labelledby={linksHeadingId}>
+                <h4 id={linksHeadingId} className={styles.linksHeading}>
+                  Idées liées
+                </h4>
+                {viewModel.isLoadingLinkedNotes && <p className={styles.empty}>Chargement…</p>}
+                {viewModel.linkedNotesError !== null && <ErrorMessage>{viewModel.linkedNotesError}</ErrorMessage>}
+                {!viewModel.isLoadingLinkedNotes && viewModel.linkedNotesError === null && viewModel.linkedNotes.length === 0 && (
+                  <p className={styles.empty}>Aucune idée liée</p>
+                )}
+                {viewModel.linkedNotes.length > 0 && (
+                  <ul className={styles.linksList}>
+                    {viewModel.linkedNotes.map(
+                      (note: Note): JSX.Element => (
+                        <li key={note.id}>{note.title}</li>
+                      ),
+                    )}
+                  </ul>
+                )}
+              </section>
               <div>
                 <Button variant="secondary" onClick={(): void => setIsEditing(true)}>
                   Modifier

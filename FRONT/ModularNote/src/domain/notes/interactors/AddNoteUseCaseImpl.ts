@@ -18,8 +18,8 @@ export class AddNoteUseCaseImpl implements AddNoteUseCase {
   }
 
   /** @inheritDoc */
-  async execute(title: string, description: string | null): Promise<Note> {
+  async execute(title: string, description: string | null, linkedNoteIds: string[]): Promise<Note> {
     const newNote: NewNote = createNewNote(title, description)
-    return this.noteRepository.add(newNote)
+    return this.noteRepository.add(newNote, linkedNoteIds)
   }
 }

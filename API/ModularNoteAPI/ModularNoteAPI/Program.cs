@@ -1,3 +1,7 @@
+using Application.Links.Abstractions.Services;
+using Application.Links.Abstractions.UseCases;
+using Application.Links.Services;
+using Application.Links.UseCases;
 using Application.Notes.Abstractions.UseCases;
 using Application.Notes.UseCases;
 using Infrastructure;
@@ -21,6 +25,8 @@ builder.Services.AddScoped<IGetNotesUseCase, GetNotesUseCase>();
 builder.Services.AddScoped<IGetNoteByIdUseCase, GetNoteByIdUseCase>();
 builder.Services.AddScoped<IUpdateNoteUseCase, UpdateNoteUseCase>();
 builder.Services.AddScoped<IDeleteNoteUseCase, DeleteNoteUseCase>();
+builder.Services.AddScoped<IGetNoteLinksUseCase, GetNoteLinksUseCase>();
+builder.Services.AddScoped<INoteLinkService, NoteLinkService>();
 
 // Infrastructure (database + repositories)
 builder.Services.AddInfrastructure(builder.Configuration);

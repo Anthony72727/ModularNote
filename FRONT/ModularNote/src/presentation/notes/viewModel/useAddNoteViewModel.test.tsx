@@ -2,6 +2,8 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createTestContext } from '../../../core/di/createTestContext.test-utils'
+import { ApiError } from '../../../core/http/ApiError'
+import { LinkedNoteNotFoundError } from '../../../domain/notes/entity/errors/LinkedNoteNotFoundError'
 import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import type { Note } from '../../../domain/notes/entity/models/Note'
 import { aNote, createFakeNoteRepository } from '../../../domain/notes/repositories/FakeNoteRepository.test-utils'
@@ -24,7 +26,7 @@ describe('useAddNoteViewModel', () => {
     act(() => result.current.submit())
 
     await waitFor(() => expect(result.current.title).toBe(''))
-    expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null })
+    expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null }, [])
     expect(queryClient.getQueryData(noteQueryKeys.all)).toEqual([existing, created])
     expect(queryClient.getQueryData(noteQueryKeys.detail('created'))).toBe(created)
     expect(result.current.description).toBe('')
@@ -88,6 +90,98 @@ describe('useAddNoteViewModel', () => {
     act(() => result.current.submit())
 
     expect(repository.add).toHaveBeenCalledOnce()
+  })
+
+  describe('linked notes', () => {
+    it('sends the ids of the chosen notes, once each, then empties the choice and refreshes the links', async () => {
+      const repository = createFakeNoteRepository()
+      repository.add.mockResolvedValue(aNote({ id: 'created' }))
+      const { queryClient, wrapper } = createTestContext(repository)
+      queryClient.setQueryData<Note[]>(noteQueryKeys.links('first'), [])
+      const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+      act(() => result.current.changeTitle('Mon idée'))
+      act(() => result.current.addLinkedNote(aNote({ id: 'first' })))
+      act(() => result.current.addLinkedNote(aNote({ id: 'first' })))
+      act(() => result.current.addLinkedNote(aNote({ id: 'second' })))
+      act(() => result.current.submit())
+
+      await waitFor(() => expect(result.current.linkedNotes).toEqual([]))
+      expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null }, ['first', 'second'])
+      expect(queryClient.getQueryState(noteQueryKeys.links('first'))?.isInvalidated).toBe(true)
+    })
+
+    it('gives up a chosen note', () => {
+      const { wrapper } = createTestContext(createFakeNoteRepository())
+      const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+      act(() => result.current.addLinkedNote(aNote({ id: 'first' })))
+      act(() => result.current.removeLinkedNote('first'))
+
+      expect(result.current.linkedNotes).toEqual([])
+    })
+
+    it('counts a chosen note as unsaved input', () => {
+      const { wrapper } = createTestContext(createFakeNoteRepository())
+      const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+      act(() => result.current.addLinkedNote(aNote()))
+
+      expect(result.current.hasUnsavedInput).toBe(true)
+    })
+
+    it('names the note that does not exist anymore, stops linking it and keeps the input', async () => {
+      const repository = createFakeNoteRepository()
+      const kept = aNote({ id: 'kept', title: 'Gardée' })
+      const gone = aNote({ id: 'gone', title: 'Disparue' })
+      repository.add.mockRejectedValue(new LinkedNoteNotFoundError())
+      repository.getAll.mockResolvedValue([kept])
+      const { queryClient, wrapper } = createTestContext(repository)
+      queryClient.setQueryData<Note[]>(noteQueryKeys.all, [kept, gone])
+      const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+      act(() => result.current.changeTitle('Mon idée'))
+      act(() => result.current.addLinkedNote(kept))
+      act(() => result.current.addLinkedNote(gone))
+      act(() => result.current.submit())
+
+      await waitFor(() => expect(result.current.error).toBe("L'idée liée « Disparue » n'existe plus."))
+      expect(result.current.linkedNotes).toEqual([kept])
+      expect(result.current.title).toBe('Mon idée')
+      expect(queryClient.getQueryData(noteQueryKeys.all)).toEqual([kept])
+    })
+
+    it('clears the name of the missing note as soon as the user edits the form', async () => {
+      const repository = createFakeNoteRepository()
+      repository.add.mockRejectedValue(new LinkedNoteNotFoundError())
+      repository.getAll.mockResolvedValue([])
+      const { wrapper } = createTestContext(repository)
+      const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+      act(() => result.current.changeTitle('Mon idée'))
+      act(() => result.current.addLinkedNote(aNote({ title: 'Disparue' })))
+      act(() => result.current.submit())
+      await waitFor(() => expect(result.current.error).toBe("L'idée liée « Disparue » n'existe plus."))
+
+      act(() => result.current.changeTitle('Mon idée 2'))
+
+      await waitFor(() => expect(result.current.error).toBeNull())
+    })
+
+    it('keeps a generic message and the chosen notes when the notes cannot be read again', async () => {
+      const repository = createFakeNoteRepository()
+      const linked = aNote({ title: 'Peut-être disparue' })
+      repository.add.mockRejectedValue(new LinkedNoteNotFoundError())
+      repository.getAll.mockRejectedValue(new ApiError(500, 'boom'))
+      const { wrapper } = createTestContext(repository)
+      const { result } = renderHook(() => useAddNoteViewModel(), { wrapper })
+
+      act(() => result.current.changeTitle('Mon idée'))
+      act(() => result.current.addLinkedNote(linked))
+      act(() => result.current.submit())
+
+      await waitFor(() => expect(result.current.error).toBe("Une des idées liées n'existe plus."))
+      expect(result.current.linkedNotes).toEqual([linked])
+    })
   })
 
   it('tells whether the title is blank', () => {

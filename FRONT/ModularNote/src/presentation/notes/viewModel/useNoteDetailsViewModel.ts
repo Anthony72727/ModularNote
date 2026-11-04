@@ -20,15 +20,22 @@ export type NoteDetailsViewModel = {
   note: Note | null
   /** Message to show when the note cannot be loaded, null otherwise */
   error: string | null
+  /** Notes linked to this note, oldest first (empty while they are not known yet) */
+  linkedNotes: Note[]
+  /** True during the first loading of the linked notes */
+  isLoadingLinkedNotes: boolean
+  /** Message to show when the linked notes cannot be loaded, null otherwise */
+  linkedNotesError: string | null
 }
 
 /**
- * ViewModel of the details panel: shows the note from the list right away, then refreshes it from the API
+ * ViewModel of the details panel: shows the note from the list right away, then refreshes it from the API,
+ * and reads the notes linked to it
  * @param noteId - Id of the note to show
- * @returns The note and the error to show
+ * @returns The note, its linked notes and the errors to show
  */
 export function useNoteDetailsViewModel(noteId: string): NoteDetailsViewModel {
-  const { getNoteById }: Dependencies = useDependencies()
+  const { getNoteById, getNoteLinks }: Dependencies = useDependencies()
   const queryClient: QueryClient = useQueryClient()
 
   const noteQuery: UseQueryResult<Note, Error> = useQuery({
@@ -40,8 +47,18 @@ export function useNoteDetailsViewModel(noteId: string): NoteDetailsViewModel {
       !(error instanceof NoteNotFoundError) && failureCount < MAX_RETRIES,
   })
 
+  const linkedNotesQuery: UseQueryResult<Note[], Error> = useQuery({
+    queryKey: noteQueryKeys.links(noteId),
+    queryFn: ({ signal }: QueryFunctionContext): Promise<Note[]> => getNoteLinks.execute(noteId, signal),
+    retry: (failureCount: number, error: Error): boolean =>
+      !(error instanceof NoteNotFoundError) && failureCount < MAX_RETRIES,
+  })
+
   return {
     note: noteQuery.data ?? null,
     error: noteQuery.isError ? toNoteErrorMessage(noteQuery.error) : null,
+    linkedNotes: linkedNotesQuery.data ?? [],
+    isLoadingLinkedNotes: linkedNotesQuery.isPending,
+    linkedNotesError: linkedNotesQuery.isError ? toNoteErrorMessage(linkedNotesQuery.error) : null,
   }
 }

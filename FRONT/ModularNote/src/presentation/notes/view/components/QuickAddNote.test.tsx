@@ -34,7 +34,7 @@ describe('QuickAddNote', () => {
 
     await userEvent.type(field, '  Mon idée  {Enter}')
 
-    expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null })
+    expect(repository.add).toHaveBeenCalledExactlyOnceWith({ title: 'Mon idée', description: null }, [])
     await waitFor(() => expect(field.value).toBe(''))
     expect(document.activeElement).toBe(field)
     expect(queryClient.getQueryData(noteQueryKeys.all)).toEqual([created])
@@ -86,6 +86,13 @@ describe('QuickAddNote', () => {
     await userEvent.keyboard('{Enter}{Enter}')
 
     expect(repository.add).toHaveBeenCalledOnce()
+  })
+
+  it('does not propose to link the note', () => {
+    const { wrapper } = createTestContext(createFakeNoteRepository())
+    render(<QuickAddNote />, { wrapper })
+
+    expect(screen.queryByLabelText(/Idées liées/)).toBeNull()
   })
 
   it('keeps the text and shows an error when the note cannot be saved', async () => {
