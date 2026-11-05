@@ -1,4 +1,5 @@
 import type { NewNote, Note } from '../entity/models/Note'
+import type { NoteLink } from '../entity/models/NoteLink'
 
 /**
  * Contract for reading and saving notes, implemented by the data layer
@@ -28,6 +29,13 @@ export interface NoteRepository {
    * @throws NoteNotFoundError if the note does not exist
    */
   getLinkedNotes(id: string, signal?: AbortSignal): Promise<Note[]>
+
+  /**
+   * Read every link between the notes
+   * @param signal - Cancels the reading when the caller does not need the result anymore
+   * @returns Every link, in no particular order
+   */
+  getAllLinks(signal?: AbortSignal): Promise<NoteLink[]>
 
   /**
    * Save a new note and its links: either all of them are saved, or nothing is

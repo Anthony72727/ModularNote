@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import type { Mock } from 'vitest'
 import type { NewNote, Note } from '../entity/models/Note'
+import type { NoteLink } from '../entity/models/NoteLink'
 import type { NoteRepository } from './NoteRepository'
 
 /**
@@ -13,6 +14,8 @@ export type FakeNoteRepository = {
   getById: Mock<(id: string, signal?: AbortSignal) => Promise<Note>>
   /** Mock of NoteRepository.getLinkedNotes */
   getLinkedNotes: Mock<(id: string, signal?: AbortSignal) => Promise<Note[]>>
+  /** Mock of NoteRepository.getAllLinks */
+  getAllLinks: Mock<(signal?: AbortSignal) => Promise<NoteLink[]>>
   /** Mock of NoteRepository.add */
   add: Mock<(note: NewNote, linkedNoteIds: string[]) => Promise<Note>>
   /** Mock of NoteRepository.update */
@@ -23,7 +26,7 @@ export type FakeNoteRepository = {
 
 /**
  * Create a repository whose methods return nothing until a test sets their result,
- * except getLinkedNotes which finds no link: most tests open a note without caring about its links
+ * except getLinkedNotes and getAllLinks which find no link: most tests do not care about the links
  * @returns A repository whose methods are all mocks
  */
 export function createFakeNoteRepository(): FakeNoteRepository {
@@ -31,6 +34,7 @@ export function createFakeNoteRepository(): FakeNoteRepository {
     getAll: vi.fn<(signal?: AbortSignal) => Promise<Note[]>>(),
     getById: vi.fn<(id: string, signal?: AbortSignal) => Promise<Note>>(),
     getLinkedNotes: vi.fn<(id: string, signal?: AbortSignal) => Promise<Note[]>>().mockResolvedValue([]),
+    getAllLinks: vi.fn<(signal?: AbortSignal) => Promise<NoteLink[]>>().mockResolvedValue([]),
     add: vi.fn<(note: NewNote, linkedNoteIds: string[]) => Promise<Note>>(),
     update: vi.fn<(id: string, note: NewNote) => Promise<Note>>(),
     delete: vi.fn<(id: string) => Promise<void>>(),

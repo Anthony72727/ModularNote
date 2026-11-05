@@ -4,15 +4,17 @@ import { LinkedNoteNotFoundError } from '../../../domain/notes/entity/errors/Lin
 import { NoteNotFoundError } from '../../../domain/notes/entity/errors/NoteNotFoundError'
 import { NoteRejectedError } from '../../../domain/notes/entity/errors/NoteRejectedError'
 import type { NewNote, Note } from '../../../domain/notes/entity/models/Note'
+import type { NoteLink } from '../../../domain/notes/entity/models/NoteLink'
 import type { NoteRepository } from '../../../domain/notes/repositories/NoteRepository'
 import type { AddNoteRequestDto } from '../dtos/AddNoteRequestDto'
+import type { GetLinksResponseDto } from '../dtos/GetLinksResponseDto'
 import type { GetNotesResponseDto } from '../dtos/GetNotesResponseDto'
 import type { NoteDto } from '../dtos/NoteDto'
 import type { UpdateNoteRequestDto } from '../dtos/UpdateNoteRequestDto'
-import { toAddNoteRequestDto, toNote, toUpdateNoteRequestDto } from '../mappers/NoteMapper'
+import { toAddNoteRequestDto, toNote, toNoteLink, toUpdateNoteRequestDto } from '../mappers/NoteMapper'
 
 /**
- * NoteRepository that calls the REST API (/api/notes)
+ * NoteRepository that calls the REST API (/api/notes and /api/links)
  */
 export class HttpNoteRepository implements NoteRepository {
   private readonly httpClient: HttpClient
@@ -58,6 +60,12 @@ export class HttpNoteRepository implements NoteRepository {
       }
       throw error
     }
+  }
+
+  /** @inheritDoc */
+  async getAllLinks(signal?: AbortSignal): Promise<NoteLink[]> {
+    const response: GetLinksResponseDto = await this.httpClient.get<GetLinksResponseDto>('/links', signal)
+    return response.links.map(toNoteLink)
   }
 
   /** @inheritDoc */
