@@ -7,6 +7,7 @@ import type { Note } from '../../../../domain/notes/entity/models/Note'
 import type { NoteLink } from '../../../../domain/notes/entity/models/NoteLink'
 import type { CanvasPosition } from '../../util/computeCanvasLayout'
 import { mergeCanvasNodes } from '../../util/mergeCanvasNodes'
+import { resolveCanvasCollisions } from '../../util/resolveCanvasCollisions'
 import { CANVAS_FIT_VIEW_OPTIONS } from './canvasFitViewOptions'
 import type { CanvasLinkEdgeType, CanvasNoteNodeType } from './canvasGraphTypes'
 import { CanvasControls } from './CanvasControls'
@@ -41,8 +42,8 @@ function countLinks(noteId: string, links: NoteLink[]): number {
 }
 
 /**
- * The notes and their links on a surface that can be panned and zoomed. The notes can be dragged:
- * their position lives here, in the memory of the page, and is forgotten when the page is left
+ * The notes and their links on a surface that can be panned and zoomed. The notes can be dragged and they never
+ * overlap: their position lives here, in the memory of the page, and is forgotten when the page is left
  * @param props - The notes, their links and their positions
  * @returns The surface
  */
@@ -68,7 +69,7 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
 
   function handleNodesChange(changes: NodeChange<CanvasNoteNodeType>[]): void {
     setCurrentNodes((current: CanvasNoteNodeType[]): CanvasNoteNodeType[] =>
-      applyNodeChanges(changes, mergeCanvasNodes(computedNodes, current)),
+      resolveCanvasCollisions(applyNodeChanges(changes, mergeCanvasNodes(computedNodes, current))),
     )
   }
 
