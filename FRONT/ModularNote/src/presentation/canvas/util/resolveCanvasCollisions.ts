@@ -47,11 +47,15 @@ function separate(first: Circle, second: Circle): boolean {
 
 /**
  * Keep a round free space around every note: a note whose circle touches another one is pushed aside, which can push
- * the next one, and so on. A note being dragged never moves, it is the others that make room.
+ * the next one, and so on. A note being dragged or listed as fixed never moves, it is the others that make room.
  * @param nodes - Notes of the canvas
+ * @param fixedIds - Ids of other notes that must not move
  * @returns The notes, with a new position for those that had to move
  */
-export function resolveCanvasCollisions(nodes: CanvasNoteNodeType[]): CanvasNoteNodeType[] {
+export function resolveCanvasCollisions(
+  nodes: CanvasNoteNodeType[],
+  fixedIds: ReadonlySet<string> = new Set<string>(),
+): CanvasNoteNodeType[] {
   const circles: Circle[] = nodes.map((node: CanvasNoteNodeType): Circle => {
     const width: number = node.measured?.width ?? DEFAULT_WIDTH
     const height: number = node.measured?.height ?? DEFAULT_HEIGHT
@@ -59,7 +63,7 @@ export function resolveCanvasCollisions(nodes: CanvasNoteNodeType[]): CanvasNote
       x: node.position.x + width / 2,
       y: node.position.y + height / 2,
       radius: Math.hypot(width, height) / 2 + MARGIN,
-      isFixed: node.dragging === true,
+      isFixed: node.dragging === true || fixedIds.has(node.id),
       hasMoved: false,
     }
   })

@@ -33,6 +33,13 @@ describe('resolveCanvasCollisions', () => {
     expect(result[1]).toBe(nodes[1])
   })
 
+  it('pushes a note aside without moving a note listed as fixed', () => {
+    const [fixed, pushed] = resolveCanvasCollisions([aNode('a', 0, 0), aNode('b', 50, 10)], new Set(['a']))
+
+    expect(fixed.position).toEqual({ x: 0, y: 0 })
+    expect(distance(fixed, pushed)).toBeCloseTo(RADIUS * 2)
+  })
+
   it('pushes a note aside without moving the one being dragged', () => {
     const [dragged, pushed] = resolveCanvasCollisions([aNode('a', 0, 0, true), aNode('b', 50, 10)])
 

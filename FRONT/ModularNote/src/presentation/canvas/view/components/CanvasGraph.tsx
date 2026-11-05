@@ -10,6 +10,8 @@ import { mergeCanvasNodes } from '../../util/mergeCanvasNodes'
 import { resolveCanvasCollisions } from '../../util/resolveCanvasCollisions'
 import { useCanvasModeViewModel } from '../../viewModel/useCanvasModeViewModel'
 import type { CanvasModeViewModel } from '../../viewModel/useCanvasModeViewModel'
+import { useCanvasSettlingViewModel } from '../../viewModel/useCanvasSettlingViewModel'
+import type { CanvasSettlingViewModel } from '../../viewModel/useCanvasSettlingViewModel'
 import { CanvasBackground } from './CanvasBackground'
 import { CANVAS_FIT_VIEW_OPTIONS } from './canvasFitViewOptions'
 import type { CanvasLinkEdgeType, CanvasNoteNodeType } from './canvasGraphTypes'
@@ -47,7 +49,8 @@ function countLinks(noteId: string, links: NoteLink[]): number {
 
 /**
  * The notes and their links on a surface that can be panned and zoomed. In move mode the notes can be dragged, and
- * they never overlap: their position lives here, in the memory of the page, and is forgotten when the page is left.
+ * they never overlap: the notes pushed aside slide around the dragged one, then go back to their place. Their position
+ * lives here, in the memory of the page, and is forgotten when the page is left.
  * In selection mode, surrounding notes selects them; in any mode, Ctrl + click adds or removes a note from the
  * selection. The selected notes then move together, in move mode
  * @param props - The notes, their links and their positions
@@ -57,6 +60,7 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
   const [currentNodes, setCurrentNodes] = useState<CanvasNoteNodeType[]>([])
   const [isSelectionFinishing, setIsSelectionFinishing] = useState<boolean>(false)
   const modeViewModel: CanvasModeViewModel = useCanvasModeViewModel()
+  const settlingViewModel: CanvasSettlingViewModel = useCanvasSettlingViewModel(setCurrentNodes)
   const isSelectionMode: boolean = modeViewModel.mode === 'selection'
 
   const computedNodes: CanvasNoteNodeType[] = notes.map(
@@ -124,6 +128,10 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       onNodesChange={handleNodesChange}
       onSelectionEnd={(): void => setIsSelectionFinishing(true)}
       onNodeClick={handleNodeClick}
+      onNodeDragStart={(): void => settlingViewModel.startDrag(nodes)}
+      onNodeDragStop={(_event: unknown, _node: CanvasNoteNodeType, dropped: CanvasNoteNodeType[]): void =>
+        settlingViewModel.stopDrag(dropped)
+      }
       onPaneClick={clearSelection}
       fitView
       fitViewOptions={CANVAS_FIT_VIEW_OPTIONS}
