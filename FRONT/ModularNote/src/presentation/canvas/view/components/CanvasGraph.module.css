@@ -1,6 +1,17 @@
 .graph {
   --xy-background-color: var(--color-bg);
   --xy-attribution-background-color: transparent;
+  --xy-selection-background-color: rgb(94 196 207 / 0.08);
+  --xy-selection-border: 1px dashed var(--color-link);
+}
+
+/* React Flow draws a box over the selected notes: it would hide them from the mouse */
+.graph :global(.react-flow__nodesselection) {
+  display: none;
+}
+
+.selecting :global(.react-flow__pane) {
+  cursor: crosshair;
 }
 
 .count {

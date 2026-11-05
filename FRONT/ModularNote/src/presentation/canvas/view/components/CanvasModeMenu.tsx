@@ -12,16 +12,25 @@ type CanvasModeMenuProps = {
 }
 
 /**
+ * Name of each mode, as announced by the button that shows the current mode
+ */
+const MODE_NAMES: Record<CanvasMode, string> = {
+  navigation: 'navigation',
+  move: 'déplacement',
+  selection: 'sélection',
+}
+
+/**
  * Icon of a mode
  */
 function ModeIcon({ mode }: { mode: CanvasMode }): JSX.Element {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
-      {mode === 'navigation' ? (
+      {mode === 'navigation' && (
         <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 11V4.5a1.5 1.5 0 0 1 3 0V12M14 11.5V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.6-2.2L3.3 14.5a1.5 1.5 0 0 1 2.3-1.9L8 15" />
-      ) : (
-        <path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" />
       )}
+      {mode === 'move' && <path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" />}
+      {mode === 'selection' && <rect x="4" y="4" width="16" height="16" rx="2" strokeDasharray="3 3" />}
     </svg>
   )
 }
@@ -44,7 +53,6 @@ function Chevron({ isOpen }: { isOpen: boolean }): JSX.Element {
  */
 export function CanvasModeMenu({ viewModel }: CanvasModeMenuProps): JSX.Element {
   const { mode, isMenuOpen, chooseMode, toggleMenu }: CanvasModeViewModel = viewModel
-  const modeName: string = mode === 'navigation' ? 'navigation' : 'déplacement'
 
   if (!isMenuOpen) {
     return (
@@ -53,7 +61,7 @@ export function CanvasModeMenu({ viewModel }: CanvasModeMenuProps): JSX.Element 
           type="button"
           className={styles.toggle}
           aria-expanded="false"
-          aria-label={`Mode ${modeName}. Changer de mode`}
+          aria-label={`Mode ${MODE_NAMES[mode]}. Changer de mode`}
           onClick={toggleMenu}
         >
           <ModeIcon mode={mode} />
@@ -125,6 +133,25 @@ export function CanvasModeMenu({ viewModel }: CanvasModeMenuProps): JSX.Element 
             </span>
             <span className={styles.modeDescription}>
               Glisser une idée pour la placer. Elles ne se chevauchent pas et les liens suivent.
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={mode === 'selection' ? `${styles.mode} ${styles.modeActive}` : styles.mode}
+          aria-pressed={mode === 'selection'}
+          onClick={(): void => chooseMode('selection')}
+        >
+          <span className={styles.modeIcon}>
+            <ModeIcon mode="selection" />
+          </span>
+          <span className={styles.modeText}>
+            <span className={styles.modeName}>
+              Sélection <kbd className={styles.key}>S</kbd>
+            </span>
+            <span className={styles.modeDescription}>
+              Glisser pour entourer des idées : elles se sélectionnent et se déplacent ensemble.
             </span>
           </span>
         </button>

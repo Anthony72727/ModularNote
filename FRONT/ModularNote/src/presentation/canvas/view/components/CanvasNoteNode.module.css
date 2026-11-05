@@ -16,6 +16,13 @@
   cursor: grabbing;
 }
 
+/* The second line of the frame is a shadow, so that the note keeps its size when it is selected */
+.selected {
+  border-color: var(--color-accent);
+  background: var(--color-surface-muted);
+  box-shadow: 0 0 0 1px var(--color-accent), var(--shadow-floating);
+}
+
 .dot {
   position: absolute;
   top: 17px;

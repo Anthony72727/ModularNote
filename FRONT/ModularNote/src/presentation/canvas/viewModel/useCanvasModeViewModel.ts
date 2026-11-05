@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Mode of the canvas: navigation only moves the view, move also lets the user drag the notes
+ * Mode of the canvas: navigation only moves the view, move lets the user drag the notes,
+ * selection lets the user surround notes to select them
  */
-export type CanvasMode = 'navigation' | 'move'
+export type CanvasMode = 'navigation' | 'move' | 'selection'
 
 /**
  * State and actions of the mode of the canvas
@@ -20,7 +21,7 @@ export type CanvasModeViewModel = {
 }
 
 /**
- * ViewModel of the mode of the canvas, which starts in navigation: N and D switch mode, Escape closes the list
+ * ViewModel of the mode of the canvas, which starts in navigation: N, D and S switch mode, Escape closes the list
  * @returns The mode and the actions the view can call
  */
 export function useCanvasModeViewModel(): CanvasModeViewModel {
@@ -38,6 +39,8 @@ export function useCanvasModeViewModel(): CanvasModeViewModel {
         setMode('navigation')
       } else if (key === 'd') {
         setMode('move')
+      } else if (key === 's') {
+        setMode('selection')
       } else if (key === 'escape') {
         setIsMenuOpen(false)
       }

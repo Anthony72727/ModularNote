@@ -1,4 +1,4 @@
-import { applyNodeChanges, Panel, ReactFlow } from '@xyflow/react'
+import { applyNodeChanges, Panel, ReactFlow, SelectionMode } from '@xyflow/react'
 import type { EdgeTypes, NodeChange, NodeTypes } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useState } from 'react'
@@ -47,13 +47,16 @@ function countLinks(noteId: string, links: NoteLink[]): number {
 
 /**
  * The notes and their links on a surface that can be panned and zoomed. In move mode the notes can be dragged, and
- * they never overlap: their position lives here, in the memory of the page, and is forgotten when the page is left
+ * they never overlap: their position lives here, in the memory of the page, and is forgotten when the page is left.
+ * In selection mode, surrounding notes selects them: they then move together, in move mode
  * @param props - The notes, their links and their positions
  * @returns The surface
  */
 export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: CanvasGraphProps): JSX.Element {
   const [currentNodes, setCurrentNodes] = useState<CanvasNoteNodeType[]>([])
+  const [isSelectionFinishing, setIsSelectionFinishing] = useState<boolean>(false)
   const modeViewModel: CanvasModeViewModel = useCanvasModeViewModel()
+  const isSelectionMode: boolean = modeViewModel.mode === 'selection'
 
   const computedNodes: CanvasNoteNodeType[] = notes.map(
     (note: Note): CanvasNoteNodeType => ({
@@ -63,6 +66,19 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       data: { note, linkCount: countLinks(note.id, links), isDeleting, onDelete },
     }),
   )
+  const nodes: CanvasNoteNodeType[] = mergeCanvasNodes(computedNodes, currentNodes)
+  const hasSelection: boolean = nodes.some((node: CanvasNoteNodeType): boolean => node.selected === true)
+
+  // Checked here and not in the callback of React Flow, whose last selection change may not be rendered yet
+  if (isSelectionFinishing) {
+    setIsSelectionFinishing(false)
+    if (hasSelection) {
+      modeViewModel.chooseMode('move')
+    }
+  } else if (modeViewModel.mode === 'navigation' && hasSelection) {
+    clearSelection()
+  }
+
   const edges: CanvasLinkEdgeType[] = links.map(
     (link: NoteLink): CanvasLinkEdgeType => ({
       id: link.id,
@@ -72,6 +88,10 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
     }),
   )
 
+  function clearSelection(): void {
+    setCurrentNodes(nodes.map((node: CanvasNoteNodeType): CanvasNoteNodeType => ({ ...node, selected: false })))
+  }
+
   function handleNodesChange(changes: NodeChange<CanvasNoteNodeType>[]): void {
     setCurrentNodes((current: CanvasNoteNodeType[]): CanvasNoteNodeType[] =>
       resolveCanvasCollisions(applyNodeChanges(changes, mergeCanvasNodes(computedNodes, current))),
@@ -80,22 +100,28 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
 
   return (
     <ReactFlow<CanvasNoteNodeType, CanvasLinkEdgeType>
-      className={styles.graph}
-      nodes={mergeCanvasNodes(computedNodes, currentNodes)}
+      className={isSelectionMode ? `${styles.graph} ${styles.selecting}` : styles.graph}
+      nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       onNodesChange={handleNodesChange}
+      onSelectionEnd={(): void => setIsSelectionFinishing(true)}
+      onNodeClick={(): void => setIsSelectionFinishing(isSelectionMode)}
+      onPaneClick={clearSelection}
       fitView
       fitViewOptions={CANVAS_FIT_VIEW_OPTIONS}
       minZoom={0.1}
       maxZoom={2}
       panOnScroll
+      panOnDrag={!isSelectionMode}
+      selectionOnDrag={isSelectionMode}
+      selectionMode={SelectionMode.Partial}
       nodesDraggable={modeViewModel.mode === 'move'}
       nodesConnectable={false}
       nodesFocusable={false}
       edgesFocusable={false}
-      elementsSelectable={false}
+      elementsSelectable={isSelectionMode}
       deleteKeyCode={null}
       attributionPosition="top-right"
     >

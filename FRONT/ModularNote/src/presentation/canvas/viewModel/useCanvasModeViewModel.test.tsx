@@ -25,11 +25,14 @@ describe('useCanvasModeViewModel', () => {
     expect(result.current.isMenuOpen).toBe(false)
   })
 
-  it('switches mode with the D and N keys', () => {
+  it('switches mode with the D, S and N keys', () => {
     const { result } = renderHook(() => useCanvasModeViewModel())
 
     fireEvent.keyDown(window, { key: 'd' })
     expect(result.current.mode).toBe('move')
+
+    fireEvent.keyDown(window, { key: 's' })
+    expect(result.current.mode).toBe('selection')
 
     fireEvent.keyDown(window, { key: 'N' })
     expect(result.current.mode).toBe('navigation')
