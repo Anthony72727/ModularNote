@@ -5,7 +5,7 @@ import type { NoteLink } from '../../../domain/notes/entity/models/NoteLink'
 
 const LINK_DISTANCE: number = 280
 const REPULSION: number = -1600
-const COLLISION_RADIUS: number = 130
+const COLLISION_RADIUS: number = 135
 const CENTER_STRENGTH: number = 0.06
 const TICKS: number = 300
 const START_RADIUS: number = 800
