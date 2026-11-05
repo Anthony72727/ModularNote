@@ -77,6 +77,38 @@ describe('CanvasPage', () => {
     expect(await screen.findByText('Idée A')).toBeDefined()
   })
 
+  it('adds and removes notes from the selection with Ctrl + click, and goes to the move mode', async () => {
+    const repository = createFakeNoteRepository()
+    repository.getAll.mockResolvedValue([noteA, noteB])
+
+    renderCanvas(repository)
+    await screen.findByText('Idée A')
+    expect(screen.getByLabelText('Mode navigation. Changer de mode')).toBeDefined()
+
+    fireEvent.click(screen.getByText('Idée A'), { ctrlKey: true })
+    fireEvent.click(screen.getByText('Idée B'), { ctrlKey: true })
+
+    await waitFor(() => expect(document.querySelectorAll('.react-flow__node.selected')).toHaveLength(2))
+    expect(screen.getByLabelText('Mode déplacement. Changer de mode')).toBeDefined()
+
+    fireEvent.click(screen.getByText('Idée A'), { ctrlKey: true })
+
+    await waitFor(() => expect(document.querySelectorAll('.react-flow__node.selected')).toHaveLength(1))
+  })
+
+  it('selects nothing with a click without Ctrl', async () => {
+    const repository = createFakeNoteRepository()
+    repository.getAll.mockResolvedValue([noteA])
+
+    renderCanvas(repository)
+    await screen.findByText('Idée A')
+
+    fireEvent.click(screen.getByText('Idée A'))
+
+    expect(document.querySelectorAll('.react-flow__node.selected')).toHaveLength(0)
+    expect(screen.getByLabelText('Mode navigation. Changer de mode')).toBeDefined()
+  })
+
   it('deletes a note after a confirmation, and it disappears at once', async () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
     const repository = createFakeNoteRepository()

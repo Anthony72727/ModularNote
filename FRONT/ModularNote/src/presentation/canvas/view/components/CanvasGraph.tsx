@@ -2,7 +2,7 @@ import { applyNodeChanges, Panel, ReactFlow, SelectionMode } from '@xyflow/react
 import type { EdgeTypes, NodeChange, NodeTypes } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useState } from 'react'
-import type { JSX } from 'react'
+import type { JSX, MouseEvent } from 'react'
 import type { Note } from '../../../../domain/notes/entity/models/Note'
 import type { NoteLink } from '../../../../domain/notes/entity/models/NoteLink'
 import type { CanvasPosition } from '../../util/computeCanvasLayout'
@@ -48,7 +48,8 @@ function countLinks(noteId: string, links: NoteLink[]): number {
 /**
  * The notes and their links on a surface that can be panned and zoomed. In move mode the notes can be dragged, and
  * they never overlap: their position lives here, in the memory of the page, and is forgotten when the page is left.
- * In selection mode, surrounding notes selects them: they then move together, in move mode
+ * In selection mode, surrounding notes selects them; in any mode, Ctrl + click adds or removes a note from the
+ * selection. The selected notes then move together, in move mode
  * @param props - The notes, their links and their positions
  * @returns The surface
  */
@@ -92,6 +93,21 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
     setCurrentNodes(nodes.map((node: CanvasNoteNodeType): CanvasNoteNodeType => ({ ...node, selected: false })))
   }
 
+  function handleNodeClick(event: MouseEvent, clicked: CanvasNoteNodeType): void {
+    // In selection mode, React Flow already handles the click, with or without Ctrl
+    if (isSelectionMode) {
+      setIsSelectionFinishing(true)
+    } else if (event.ctrlKey || event.metaKey) {
+      setCurrentNodes(
+        nodes.map(
+          (node: CanvasNoteNodeType): CanvasNoteNodeType =>
+            node.id === clicked.id ? { ...node, selected: node.selected !== true } : node,
+        ),
+      )
+      setIsSelectionFinishing(true)
+    }
+  }
+
   function handleNodesChange(changes: NodeChange<CanvasNoteNodeType>[]): void {
     setCurrentNodes((current: CanvasNoteNodeType[]): CanvasNoteNodeType[] =>
       resolveCanvasCollisions(applyNodeChanges(changes, mergeCanvasNodes(computedNodes, current))),
@@ -107,7 +123,7 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       edgeTypes={edgeTypes}
       onNodesChange={handleNodesChange}
       onSelectionEnd={(): void => setIsSelectionFinishing(true)}
-      onNodeClick={(): void => setIsSelectionFinishing(isSelectionMode)}
+      onNodeClick={handleNodeClick}
       onPaneClick={clearSelection}
       fitView
       fitViewOptions={CANVAS_FIT_VIEW_OPTIONS}
