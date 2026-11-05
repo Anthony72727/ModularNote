@@ -41,6 +41,11 @@ export function App(): JSX.Element {
         <nav aria-label="Navigation principale">
           <ul className={styles.nav}>
             <li>
+              <NavLink to={appPaths.canvas} className={navLinkClassName}>
+                Canvas
+              </NavLink>
+            </li>
+            <li>
               <NavLink to={appPaths.notes} end className={navLinkClassName}>
                 Liste
               </NavLink>
