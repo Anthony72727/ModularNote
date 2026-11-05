@@ -1,4 +1,4 @@
-import { applyNodeChanges, Background, BackgroundVariant, Panel, ReactFlow } from '@xyflow/react'
+import { applyNodeChanges, Panel, ReactFlow } from '@xyflow/react'
 import type { EdgeTypes, NodeChange, NodeTypes } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useState } from 'react'
@@ -10,6 +10,7 @@ import { mergeCanvasNodes } from '../../util/mergeCanvasNodes'
 import { resolveCanvasCollisions } from '../../util/resolveCanvasCollisions'
 import { useCanvasModeViewModel } from '../../viewModel/useCanvasModeViewModel'
 import type { CanvasModeViewModel } from '../../viewModel/useCanvasModeViewModel'
+import { CanvasBackground } from './CanvasBackground'
 import { CANVAS_FIT_VIEW_OPTIONS } from './canvasFitViewOptions'
 import type { CanvasLinkEdgeType, CanvasNoteNodeType } from './canvasGraphTypes'
 import { CanvasControls } from './CanvasControls'
@@ -98,7 +99,7 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       deleteKeyCode={null}
       attributionPosition="top-right"
     >
-      <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="var(--color-grid)" />
+      <CanvasBackground />
       <CanvasModeMenu viewModel={modeViewModel} />
       <CanvasControls />
       <Panel position="bottom-right" className={styles.count}>
