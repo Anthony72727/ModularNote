@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import type { JSX, ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { JSX, ReactNode, RefObject } from 'react'
 import { useBlocker } from 'react-router'
 import type { Blocker } from 'react-router'
 import { confirmDiscardChanges } from '../util/confirmDiscardChanges'
-import { UnsavedChangesContext } from './UnsavedChangesContext'
+import { AllowNextNavigationContext, UnsavedChangesContext } from './UnsavedChangesContext'
 
 /**
  * Props of UnsavedChangesGuard
@@ -22,11 +22,19 @@ type UnsavedChangesGuardProps = {
 export function UnsavedChangesGuard({ children }: UnsavedChangesGuardProps): JSX.Element {
   const [unsavedFormsCount, setUnsavedFormsCount] = useState<number>(0)
   const hasUnsavedChanges: boolean = unsavedFormsCount > 0
+  const isNextNavigationAllowed: RefObject<boolean> = useRef<boolean>(false)
 
-  const blocker: Blocker = useBlocker(
-    ({ currentLocation, nextLocation }): boolean =>
-      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
-  )
+  function allowNextNavigation(): void {
+    isNextNavigationAllowed.current = true
+  }
+
+  const blocker: Blocker = useBlocker(({ currentLocation, nextLocation }): boolean => {
+    if (isNextNavigationAllowed.current) {
+      isNextNavigationAllowed.current = false
+      return false
+    }
+    return hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+  })
 
   useEffect((): void => {
     if (blocker.state !== 'blocked') {
@@ -50,5 +58,9 @@ export function UnsavedChangesGuard({ children }: UnsavedChangesGuardProps): JSX
     return (): void => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [hasUnsavedChanges])
 
-  return <UnsavedChangesContext.Provider value={setUnsavedFormsCount}>{children}</UnsavedChangesContext.Provider>
+  return (
+    <UnsavedChangesContext.Provider value={setUnsavedFormsCount}>
+      <AllowNextNavigationContext.Provider value={allowNextNavigation}>{children}</AllowNextNavigationContext.Provider>
+    </UnsavedChangesContext.Provider>
+  )
 }

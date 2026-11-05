@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .labelRow {
@@ -12,35 +12,54 @@
 }
 
 .label {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .hint {
   font-weight: 400;
-  color: var(--color-text-muted);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .counter {
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
   color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .field {
   width: 100%;
-  padding: 9px 11px;
+  padding: 11px 16px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font: inherit;
   color: var(--color-text);
   background: var(--color-surface);
 }
 
-.field:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 0;
-  border-color: transparent;
+.prominent {
+  padding-left: 42px;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.75rem;
+  /* The kernel of the idea being typed */
+  background:
+    radial-gradient(circle at 23px 50%, var(--color-accent) 5px, transparent 5.5px),
+    var(--color-surface);
+}
+
+.prominent:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--glow-accent);
 }
 
 .multiline {
@@ -48,6 +67,11 @@
   min-height: 120px;
 }
 
-.invalid {
+.invalid,
+.invalid:focus-visible {
   border-color: var(--color-danger);
+}
+
+.prominent.invalid:focus-visible {
+  box-shadow: 0 0 0 1px var(--color-danger);
 }

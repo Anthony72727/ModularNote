@@ -1,41 +1,59 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: dark light;
 
-  --color-bg: #f5f4f0;
-  --color-surface: #ffffff;
-  --color-surface-muted: #efede7;
-  --color-border: #e1ded6;
-  --color-text: #1f1d1a;
-  --color-text-muted: #6b665d;
-  --color-accent: #4f46e5;
-  --color-accent-hover: #4338ca;
-  --color-accent-contrast: #ffffff;
-  --color-accent-soft: #e9e8fc;
-  --color-danger: #b42318;
-  --color-danger-soft: #fdecea;
-  --color-focus: #4f46e5;
+  --color-bg: #0c0f14;
+  --color-surface: #141922;
+  --color-surface-muted: #1c2330;
+  --color-border: #2a3342;
+  --color-grid: #1f2631;
+  --color-text: #e7eaf0;
+  --color-text-muted: #8f99ab;
+  --color-accent: #d4869c;
+  --color-accent-hover: #dd9eb0;
+  --color-accent-contrast: #191013;
+  --color-accent-soft: #30242c;
+  --color-accent-line: #5c3f4a;
+  --color-link: #5ec4cf;
+  --color-link-soft: #12303a;
+  --color-link-line: #24545c;
+  --color-danger: #ff8a7a;
+  --color-danger-soft: #3a1a18;
+  --color-focus: #5ec4cf;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --shadow-panel: 0 -10px 30px rgb(0 0 0 / 0.08);
+  --font-display: Sora, 'Segoe UI', system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-pill: 999px;
+
+  --shadow-panel: 0 -10px 30px rgb(0 0 0 / 0.5);
+  --glow-accent: 0 0 0 1px #d4869c, 0 0 24px rgb(212 134 156 / 0.28);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --color-bg: #151413;
-    --color-surface: #1e1d1b;
-    --color-surface-muted: #292725;
-    --color-border: #36332f;
-    --color-text: #eeebe5;
-    --color-text-muted: #a29d93;
-    --color-accent: #8b85f5;
-    --color-accent-hover: #a29df7;
-    --color-accent-contrast: #14131f;
-    --color-accent-soft: #2a2847;
-    --color-danger: #f0877d;
-    --color-danger-soft: #3a1f1c;
-    --color-focus: #a29df7;
-    --shadow-panel: 0 -10px 30px rgb(0 0 0 / 0.4);
+    --color-bg: #f3f1ec;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f8f7f3;
+    --color-border: #d9d5cb;
+    --color-grid: #e2ded4;
+    --color-text: #161a21;
+    --color-text-muted: #5b6271;
+    --color-accent: #a04065;
+    --color-accent-hover: #8c3558;
+    --color-accent-contrast: #ffffff;
+    --color-accent-soft: #f7e1e8;
+    --color-accent-line: #e3b4c4;
+    --color-link: #13707a;
+    --color-link-soft: #d3ecee;
+    --color-link-line: #9fd0d5;
+    --color-danger: #b3261e;
+    --color-danger-soft: #fbe4e1;
+    --color-focus: #13707a;
+    --shadow-panel: 0 -10px 30px rgb(22 26 33 / 0.08);
+    --glow-accent: 0 0 0 1px #a04065, 0 4px 16px rgb(160 64 101 / 0.18);
   }
 }
 
@@ -47,8 +65,9 @@
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
   color: var(--color-text);
   background: var(--color-bg);
 }
@@ -58,6 +77,18 @@ h2,
 h3,
 p {
   margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
 :focus-visible {

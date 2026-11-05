@@ -15,7 +15,7 @@ describe('NoteForm', () => {
     const repository = createFakeNoteRepository()
     repository.getAll.mockResolvedValue([])
     const { wrapper } = createTestContext(repository)
-    render(<NoteForm />, { wrapper })
+    render(<NoteForm onCreated={vi.fn()} onCancel={vi.fn()} />, { wrapper })
 
     await userEvent.click(screen.getByRole('button', { name: "Créer l'idée" }))
 
@@ -30,7 +30,7 @@ describe('NoteForm', () => {
     repository.getAll.mockResolvedValue([])
     repository.add.mockRejectedValue(new NoteRejectedError())
     const { wrapper } = createTestContext(repository)
-    render(<NoteForm />, { wrapper })
+    render(<NoteForm onCreated={vi.fn()} onCancel={vi.fn()} />, { wrapper })
 
     await userEvent.type(screen.getByLabelText('Titre'), 'Mon idée')
     await userEvent.click(screen.getByRole('button', { name: "Créer l'idée" }))
@@ -42,7 +42,7 @@ describe('NoteForm', () => {
 
   describe('linked notes', () => {
     function searchField(): HTMLInputElement {
-      return screen.getByLabelText(/Idées liées/) as HTMLInputElement
+      return screen.getByLabelText(/Lier à d'autres idées/) as HTMLInputElement
     }
 
     function renderWithNotes(...notes: ReturnType<typeof aNote>[]): ReturnType<typeof createFakeNoteRepository> {
@@ -50,7 +50,7 @@ describe('NoteForm', () => {
       repository.getAll.mockResolvedValue(notes)
       repository.add.mockResolvedValue(aNote({ id: 'created' }))
       const { wrapper } = createTestContext(repository)
-      render(<NoteForm />, { wrapper })
+      render(<NoteForm onCreated={vi.fn()} onCancel={vi.fn()} />, { wrapper })
       return repository
     }
 
@@ -116,7 +116,7 @@ describe('NoteForm', () => {
       repository.getAll.mockResolvedValueOnce([gone]).mockResolvedValue([])
       repository.add.mockRejectedValue(new LinkedNoteNotFoundError())
       const { wrapper } = createTestContext(repository)
-      render(<NoteForm />, { wrapper })
+      render(<NoteForm onCreated={vi.fn()} onCancel={vi.fn()} />, { wrapper })
 
       await userEvent.type(screen.getByLabelText('Titre'), 'Mon idée')
       await userEvent.type(searchField(), 'dispar')

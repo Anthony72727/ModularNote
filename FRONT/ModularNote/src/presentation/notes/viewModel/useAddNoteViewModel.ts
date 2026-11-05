@@ -60,10 +60,11 @@ type AddNoteInput = {
 }
 
 /**
- * ViewModel of the note creation forms: the full form of the notes page and the quick add (US1.3)
+ * ViewModel of the note creation forms: the full form and the quick add (US1.3)
+ * @param onCreated - Called once a note is saved, with this note
  * @returns The state of the form and the actions the view can call
  */
-export function useAddNoteViewModel(): AddNoteViewModel {
+export function useAddNoteViewModel(onCreated?: (note: Note) => void): AddNoteViewModel {
   const { addNote, getNotes }: Dependencies = useDependencies()
   const queryClient: QueryClient = useQueryClient()
   const [title, setTitle] = useState<string>('')
@@ -152,6 +153,7 @@ export function useAddNoteViewModel(): AddNoteViewModel {
           setDescription('')
           setLinkedNotes([])
           setRecentNotes((notes: Note[]): Note[] => [note, ...notes].slice(0, MAX_RECENT_NOTES))
+          onCreated?.(note)
         },
       },
     )
