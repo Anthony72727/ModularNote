@@ -102,6 +102,17 @@ describe('HttpNoteRepository', () => {
     expect(notes).toEqual([{ ...noteDto, createdAt: new Date('2026-10-26T10:00:00Z') }])
   })
 
+  it('getAllLinks: reads GET /links and maps every link', async () => {
+    const { fake, httpClient } = createFakeHttpClient()
+    fake.get.mockResolvedValue({ links: [{ id: 'link', noteAId: 'a', noteBId: 'b' }] })
+    const controller = new AbortController()
+
+    const links = await new HttpNoteRepository(httpClient).getAllLinks(controller.signal)
+
+    expect(fake.get).toHaveBeenCalledExactlyOnceWith('/links', controller.signal)
+    expect(links).toEqual([{ id: 'link', noteAId: 'a', noteBId: 'b' }])
+  })
+
   it('getLinkedNotes: turns a 404 into NoteNotFoundError', async () => {
     const { fake, httpClient } = createFakeHttpClient()
     fake.get.mockRejectedValue(new ApiError(404, 'The note was not found.'))

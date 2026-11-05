@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { toAddNoteRequestDto, toNote, toUpdateNoteRequestDto } from './NoteMapper'
+import { toAddNoteRequestDto, toNote, toNoteLink, toUpdateNoteRequestDto } from './NoteMapper'
 
 describe('NoteMapper', () => {
+  it('toNoteLink keeps the id of the link and of its two notes', () => {
+    expect(toNoteLink({ id: 'link', noteAId: 'a', noteBId: 'b' })).toEqual({ id: 'link', noteAId: 'a', noteBId: 'b' })
+  })
+
   it('converts a DTO into a note, with a real Date', () => {
     const note = toNote({
       id: 'abc',

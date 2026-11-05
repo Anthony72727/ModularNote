@@ -29,6 +29,7 @@
   --radius-pill: 999px;
 
   --shadow-panel: 0 -10px 30px rgb(0 0 0 / 0.5);
+  --shadow-floating: 0 8px 24px rgb(0 0 0 / 0.45);
   --glow-accent: 0 0 0 1px #d4869c, 0 0 24px rgb(212 134 156 / 0.28);
 }
 
@@ -53,6 +54,7 @@
     --color-danger-soft: #fbe4e1;
     --color-focus: #13707a;
     --shadow-panel: 0 -10px 30px rgb(22 26 33 / 0.08);
+    --shadow-floating: 0 4px 14px rgb(22 26 33 / 0.1);
     --glow-accent: 0 0 0 1px #a04065, 0 4px 16px rgb(160 64 101 / 0.18);
   }
 }

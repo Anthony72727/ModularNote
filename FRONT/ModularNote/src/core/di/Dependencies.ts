@@ -1,12 +1,14 @@
 import { HttpNoteRepository } from '../../data/notes/repositories/HttpNoteRepository'
 import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
 import { DeleteNoteUseCaseImpl } from '../../domain/notes/interactors/DeleteNoteUseCaseImpl'
+import { GetLinksUseCaseImpl } from '../../domain/notes/interactors/GetLinksUseCaseImpl'
 import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
 import { GetNoteLinksUseCaseImpl } from '../../domain/notes/interactors/GetNoteLinksUseCaseImpl'
 import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
 import { UpdateNoteUseCaseImpl } from '../../domain/notes/interactors/UpdateNoteUseCaseImpl'
 import type { AddNoteUseCase } from '../../domain/notes/interactors/AddNoteUseCase'
 import type { DeleteNoteUseCase } from '../../domain/notes/interactors/DeleteNoteUseCase'
+import type { GetLinksUseCase } from '../../domain/notes/interactors/GetLinksUseCase'
 import type { GetNoteByIdUseCase } from '../../domain/notes/interactors/GetNoteByIdUseCase'
 import type { GetNoteLinksUseCase } from '../../domain/notes/interactors/GetNoteLinksUseCase'
 import type { GetNotesUseCase } from '../../domain/notes/interactors/GetNotesUseCase'
@@ -24,6 +26,8 @@ export type Dependencies = {
   getNoteById: GetNoteByIdUseCase
   /** Read the notes linked to a note */
   getNoteLinks: GetNoteLinksUseCase
+  /** Read every link between the notes */
+  getLinks: GetLinksUseCase
   /** Validate and save a new note */
   addNote: AddNoteUseCase
   /** Validate and save the modifications of a note */
@@ -44,6 +48,7 @@ export function createDependencies(): Dependencies {
     getNotes: new GetNotesUseCaseImpl(noteRepository),
     getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
     getNoteLinks: new GetNoteLinksUseCaseImpl(noteRepository),
+    getLinks: new GetLinksUseCaseImpl(noteRepository),
     addNote: new AddNoteUseCaseImpl(noteRepository),
     updateNote: new UpdateNoteUseCaseImpl(noteRepository),
     deleteNote: new DeleteNoteUseCaseImpl(noteRepository),
