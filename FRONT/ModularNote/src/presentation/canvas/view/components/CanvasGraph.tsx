@@ -8,10 +8,13 @@ import type { NoteLink } from '../../../../domain/notes/entity/models/NoteLink'
 import type { CanvasPosition } from '../../util/computeCanvasLayout'
 import { mergeCanvasNodes } from '../../util/mergeCanvasNodes'
 import { resolveCanvasCollisions } from '../../util/resolveCanvasCollisions'
+import { useCanvasModeViewModel } from '../../viewModel/useCanvasModeViewModel'
+import type { CanvasModeViewModel } from '../../viewModel/useCanvasModeViewModel'
 import { CANVAS_FIT_VIEW_OPTIONS } from './canvasFitViewOptions'
 import type { CanvasLinkEdgeType, CanvasNoteNodeType } from './canvasGraphTypes'
 import { CanvasControls } from './CanvasControls'
 import { CanvasLinkEdge } from './CanvasLinkEdge'
+import { CanvasModeMenu } from './CanvasModeMenu'
 import { CanvasNoteNode } from './CanvasNoteNode'
 import styles from './CanvasGraph.module.css'
 
@@ -42,13 +45,14 @@ function countLinks(noteId: string, links: NoteLink[]): number {
 }
 
 /**
- * The notes and their links on a surface that can be panned and zoomed. The notes can be dragged and they never
- * overlap: their position lives here, in the memory of the page, and is forgotten when the page is left
+ * The notes and their links on a surface that can be panned and zoomed. In move mode the notes can be dragged, and
+ * they never overlap: their position lives here, in the memory of the page, and is forgotten when the page is left
  * @param props - The notes, their links and their positions
  * @returns The surface
  */
 export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: CanvasGraphProps): JSX.Element {
   const [currentNodes, setCurrentNodes] = useState<CanvasNoteNodeType[]>([])
+  const modeViewModel: CanvasModeViewModel = useCanvasModeViewModel()
 
   const computedNodes: CanvasNoteNodeType[] = notes.map(
     (note: Note): CanvasNoteNodeType => ({
@@ -85,6 +89,8 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       fitViewOptions={CANVAS_FIT_VIEW_OPTIONS}
       minZoom={0.1}
       maxZoom={2}
+      panOnScroll
+      nodesDraggable={modeViewModel.mode === 'move'}
       nodesConnectable={false}
       nodesFocusable={false}
       edgesFocusable={false}
@@ -93,6 +99,7 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       attributionPosition="top-right"
     >
       <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="var(--color-grid)" />
+      <CanvasModeMenu viewModel={modeViewModel} />
       <CanvasControls />
       <Panel position="bottom-right" className={styles.count}>
         {notes.length} {notes.length > 1 ? 'idées' : 'idée'} · {links.length} {links.length > 1 ? 'liens' : 'lien'}

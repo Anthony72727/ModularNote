@@ -1,4 +1,6 @@
+/* React Flow turns off the mouse on a note that cannot be dragged: the delete action must stay available */
 .node {
+  pointer-events: auto;
   position: relative;
   width: 210px;
   padding: 12px 36px;

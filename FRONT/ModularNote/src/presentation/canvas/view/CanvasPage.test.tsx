@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -86,7 +86,8 @@ describe('CanvasPage', () => {
     renderCanvas(repository)
     await screen.findByText('Idée B')
 
-    await userEvent.click(screen.getByLabelText('Supprimer l\'idée "Idée B"'))
+    // fireEvent: the CSS that keeps the mouse active on a note is not loaded by jsdom
+    fireEvent.click(screen.getByLabelText('Supprimer l\'idée "Idée B"'))
 
     expect(confirm).toHaveBeenCalledExactlyOnceWith('Supprimer l\'idée "Idée B" ?')
     await waitFor(() => expect(screen.queryByText('Idée B')).toBeNull())
@@ -102,7 +103,7 @@ describe('CanvasPage', () => {
     renderCanvas(repository)
     await screen.findByText('Idée A')
 
-    await userEvent.click(screen.getByLabelText('Supprimer l\'idée "Idée A"'))
+    fireEvent.click(screen.getByLabelText('Supprimer l\'idée "Idée A"'))
 
     expect(repository.delete).not.toHaveBeenCalled()
     expect(screen.getByText('Idée A')).toBeDefined()
