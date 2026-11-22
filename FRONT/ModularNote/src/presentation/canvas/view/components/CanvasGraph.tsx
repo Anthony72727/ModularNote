@@ -5,6 +5,8 @@ import { useState } from 'react'
 import type { JSX, MouseEvent } from 'react'
 import type { Note } from '../../../../domain/notes/entity/models/Note'
 import type { NoteLink } from '../../../../domain/notes/entity/models/NoteLink'
+import { computeDraggedHitbox, findHitboxExit, toCanvasCircle } from '../../util/canvasHitbox'
+import type { CanvasHitbox } from '../../util/canvasHitbox'
 import type { CanvasPosition } from '../../util/computeCanvasLayout'
 import { mergeCanvasNodes } from '../../util/mergeCanvasNodes'
 import { resolveCanvasCollisions } from '../../util/resolveCanvasCollisions'
@@ -73,7 +75,8 @@ function toHighlight(noteId: string, previewedNoteId: string | null, links: Note
 
 /**
  * The notes and their links on a surface that can be panned and zoomed. In move mode the notes can be dragged, and
- * they never overlap: the notes pushed aside slide around the dragged one, then go back to their place. Their position
+ * they never overlap: the notes pushed aside slide around the dragged ones, then go back to their place; notes dragged
+ * together keep one free space around them, so that no note gets caught between them. Their position
  * lives here, in the memory of the page, and is forgotten when the page is left.
  * In selection mode, surrounding notes selects them; in any mode, Ctrl + click adds or removes a note from the
  * selection. The selected notes then move together, in move mode.
@@ -125,6 +128,20 @@ export function CanvasGraph({
     clearSelection()
   }
 
+  // A trapped note that has left the dragged notes is pushed by them again, like the others
+  const draggedHitbox: CanvasHitbox | null = computeDraggedHitbox(nodes)
+  const releasedIds: string[] = nodes
+    .filter(
+      (node: CanvasNoteNodeType): boolean =>
+        draggedHitbox !== null &&
+        settlingViewModel.trappedIds.has(node.id) &&
+        findHitboxExit(toCanvasCircle(node), draggedHitbox) === null,
+    )
+    .map((node: CanvasNoteNodeType): string => node.id)
+  if (releasedIds.length > 0) {
+    settlingViewModel.releaseNotes(releasedIds)
+  }
+
   const edges: CanvasLinkEdgeType[] = links.map(
     (link: NoteLink): CanvasLinkEdgeType => ({
       id: link.id,
@@ -166,7 +183,11 @@ export function CanvasGraph({
 
   function handleNodesChange(changes: NodeChange<CanvasNoteNodeType>[]): void {
     setCurrentNodes((current: CanvasNoteNodeType[]): CanvasNoteNodeType[] =>
-      resolveCanvasCollisions(applyNodeChanges(changes, mergeCanvasNodes(computedNodes, current))),
+      resolveCanvasCollisions(
+        applyNodeChanges(changes, mergeCanvasNodes(computedNodes, current)),
+        new Set<string>(),
+        settlingViewModel.trappedIds,
+      ),
     )
   }
 
@@ -180,7 +201,9 @@ export function CanvasGraph({
       onNodesChange={handleNodesChange}
       onSelectionEnd={(): void => setIsSelectionFinishing(true)}
       onNodeClick={handleNodeClick}
-      onNodeDragStart={(): void => settlingViewModel.startDrag(nodes)}
+      onNodeDragStart={(_event: unknown, _node: CanvasNoteNodeType, dragged: CanvasNoteNodeType[]): void =>
+        settlingViewModel.startDrag(nodes, dragged)
+      }
       onNodeDragStop={(_event: unknown, _node: CanvasNoteNodeType, dropped: CanvasNoteNodeType[]): void =>
         settlingViewModel.stopDrag(dropped)
       }

@@ -85,4 +85,30 @@ describe('resolveCanvasCollisions', () => {
 
     expect(distance(first, second)).toBeCloseTo(RADIUS * 2)
   })
+
+  it('pushes a note out of the space around notes dragged together, instead of letting it get caught between them', () => {
+    const nodes = [aNode('a', 0, 0, true), aNode('b', 600, 0, true), aNode('c', 300, 0)]
+
+    const [, , caught] = resolveCanvasCollisions(nodes)
+
+    expect(caught.position.x).toBe(300)
+    expect(Math.abs(caught.position.y)).toBeCloseTo(RADIUS * 2)
+  })
+
+  it('pushes a note out of the space between the dragged notes, even far from each of them', () => {
+    // The note does not touch the circle of a or b, but it is in the rectangle between them
+    const nodes = [aNode('a', 0, 0, true), aNode('b', 0, 1000, true), aNode('c', RADIUS * 2 - 10, 500)]
+
+    const [, , pushed] = resolveCanvasCollisions(nodes)
+
+    expect(pushed.position).toEqual({ x: RADIUS * 2, y: 500 })
+  })
+
+  it('leaves a trapped note inside the dragged notes', () => {
+    const nodes = [aNode('a', 0, 0, true), aNode('b', 600, 0, true), aNode('c', 300, 0)]
+
+    const [, , trapped] = resolveCanvasCollisions(nodes, new Set(), new Set(['c']))
+
+    expect(trapped).toBe(nodes[2])
+  })
 })

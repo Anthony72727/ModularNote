@@ -89,4 +89,35 @@ describe('settleCanvasNodes', () => {
 
     expect(settleCanvasNodes(nodes, {}, LONG_TIME)).toBe(nodes)
   })
+
+  describe('a note caught between the dragged notes when the drag started', () => {
+    const rest = { a: { x: 0, y: 0 }, b: { x: 600, y: 0 }, c: { x: 300, y: 10 } }
+    const trapped = new Set(['c'])
+
+    it('does not move while the dragged notes have not moved', () => {
+      const nodes = [aNode('a', 0, 0, true), aNode('b', 600, 0, true), aNode('c', 300, 10)]
+
+      const result = settleCanvasNodes(nodes, rest, 16, trapped)
+
+      expect(result).toBe(nodes)
+    })
+
+    it('slides little by little out of the dragged notes once they move', () => {
+      const nodes = [aNode('a', 0, 5, true), aNode('b', 600, 5, true), aNode('c', 300, 10)]
+
+      const [, , caught] = settleCanvasNodes(nodes, rest, 16, trapped)
+
+      expect(caught.position.x).toBe(300)
+      expect(caught.position.y).toBeGreaterThan(10)
+      expect(caught.position.y).toBeLessThan(5 + RADIUS * 2)
+    })
+
+    it('ends up just out of the dragged notes', () => {
+      const nodes = [aNode('a', 0, 5, true), aNode('b', 600, 5, true), aNode('c', 300, 10)]
+
+      const [, , caught] = settleCanvasNodes(nodes, rest, LONG_TIME, trapped)
+
+      expect(caught.position).toEqual({ x: 300, y: 5 + RADIUS * 2 })
+    })
+  })
 })
