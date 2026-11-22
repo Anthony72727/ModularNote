@@ -27,10 +27,19 @@ function ModeIcon({ mode }: { mode: CanvasMode }): JSX.Element {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
       {mode === 'navigation' && (
-        <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 11V4.5a1.5 1.5 0 0 1 3 0V12M14 11.5V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.6-2.2L3.3 14.5a1.5 1.5 0 0 1 2.3-1.9L8 15" />
+        <>
+          <path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4" />
+          <circle cx="12" cy="12" r="2.5" className={styles.filled} />
+        </>
       )}
-      {mode === 'move' && <path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" />}
-      {mode === 'selection' && <rect x="4" y="4" width="16" height="16" rx="2" strokeDasharray="3 3" />}
+      {mode === 'move' && (
+        <>
+          <circle cx="6.5" cy="17.5" r="3" className={styles.dashed} />
+          <path d="M9 15l4.5-4.5" className={styles.dashed} />
+          <circle cx="17" cy="7" r="3.5" className={styles.filled} />
+        </>
+      )}
+      {mode === 'selection' && <rect x="4" y="4" width="16" height="16" rx="2" className={styles.dashed} />}
     </svg>
   )
 }
@@ -99,22 +108,22 @@ export function CanvasModeMenu({ viewModel }: CanvasModeMenuProps): JSX.Element 
             <span className={styles.modeName}>
               Navigation <kbd className={styles.key}>N</kbd>
             </span>
-            <span className={styles.modeDescription}>Se balader sur le canvas sans déplacer les idées.</span>
+            <span className={styles.modeDescription}>Se balader sur le canvas sans rien modifier.</span>
           </span>
         </button>
 
         <ul className={styles.help}>
           <li>
-            <span className={styles.helpKey}>Glisser</span> · se déplacer
+            <kbd className={styles.key}>Glisser</kbd> se déplacer
           </li>
           <li>
-            <span className={styles.helpKey}>Molette</span> · haut, bas (et côtés en 4 directions)
+            <kbd className={styles.key}>Molette</kbd> haut, bas (et côtés en 4 directions)
           </li>
           <li>
-            <span className={styles.helpKey}>Maj + molette</span> · gauche, droite
+            <kbd className={styles.key}>Maj + molette</kbd> gauche, droite
           </li>
           <li>
-            <span className={styles.helpKey}>Ctrl + molette</span> · zoom
+            <kbd className={styles.key}>Ctrl + molette</kbd> zoom
           </li>
         </ul>
 
