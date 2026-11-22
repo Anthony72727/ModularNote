@@ -16,9 +16,9 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-function renderViewModel(repository = createFakeNoteRepository()) {
+function renderViewModel(repository = createFakeNoteRepository(), onNoteRemoved = vi.fn()) {
   const { wrapper } = createTestContext(repository)
-  return renderHook(() => useCanvasViewModel(), { wrapper })
+  return renderHook(() => useCanvasViewModel(onNoteRemoved), { wrapper })
 }
 
 describe('useCanvasViewModel', () => {
@@ -69,8 +69,9 @@ describe('useCanvasViewModel', () => {
     repository.getAll.mockResolvedValue([noteA, noteB])
     repository.getAllLinks.mockResolvedValue([link])
     repository.delete.mockResolvedValue()
+    const onNoteRemoved = vi.fn()
 
-    const { result } = renderViewModel(repository)
+    const { result } = renderViewModel(repository, onNoteRemoved)
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     act(() => result.current.requestDeletion(noteB))
@@ -78,6 +79,7 @@ describe('useCanvasViewModel', () => {
     await waitFor(() => expect(result.current.notes).toEqual([noteA]))
     expect(repository.delete).toHaveBeenCalledExactlyOnceWith('b')
     expect(result.current.links).toEqual([])
+    expect(onNoteRemoved).toHaveBeenCalledExactlyOnceWith('b')
   })
 
   it('shows an explicit error and removes the note when it does not exist anymore', async () => {
@@ -85,13 +87,15 @@ describe('useCanvasViewModel', () => {
     const repository = createFakeNoteRepository()
     repository.getAll.mockResolvedValue([noteA, noteB])
     repository.delete.mockRejectedValue(new NoteNotFoundError('b'))
+    const onNoteRemoved = vi.fn()
 
-    const { result } = renderViewModel(repository)
+    const { result } = renderViewModel(repository, onNoteRemoved)
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     act(() => result.current.requestDeletion(noteB))
 
     await waitFor(() => expect(result.current.deletionError).not.toBeNull())
     expect(result.current.notes).toEqual([noteA])
+    expect(onNoteRemoved).toHaveBeenCalledExactlyOnceWith('b')
   })
 })

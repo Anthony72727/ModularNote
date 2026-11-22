@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -96,17 +96,144 @@ describe('CanvasPage', () => {
     await waitFor(() => expect(document.querySelectorAll('.react-flow__node.selected')).toHaveLength(1))
   })
 
-  it('selects nothing with a click without Ctrl', async () => {
-    const repository = createFakeNoteRepository()
-    repository.getAll.mockResolvedValue([noteA])
+  describe('preview of a note', () => {
+    const preview = (): HTMLElement => screen.getByRole('complementary', { name: "Aperçu de l'idée" })
 
-    renderCanvas(repository)
-    await screen.findByText('Idée A')
+    it('opens with a click, shows the description and the linked notes, without selecting the note', async () => {
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA, noteB])
+      repository.getAllLinks.mockResolvedValue([link])
+      repository.getById.mockResolvedValue(noteA)
+      repository.getLinkedNotes.mockResolvedValue([noteB])
 
-    fireEvent.click(screen.getByText('Idée A'))
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
 
-    expect(document.querySelectorAll('.react-flow__node.selected')).toHaveLength(0)
-    expect(screen.getByLabelText('Mode navigation. Changer de mode')).toBeDefined()
+      fireEvent.click(screen.getByText('Idée A'))
+
+      expect(await within(preview()).findByText('Sa description')).toBeDefined()
+      expect(within(preview()).getByRole('heading', { name: 'Idée A' })).toBeDefined()
+      expect(await within(preview()).findByText('Idée B')).toBeDefined()
+      expect(repository.getById).toHaveBeenCalledWith('a', expect.anything())
+      expect(document.querySelectorAll('.react-flow__node.selected')).toHaveLength(0)
+      expect(screen.getByLabelText('Mode navigation. Changer de mode')).toBeDefined()
+    })
+
+    it('shows "Pas de description" for a note without one', async () => {
+      const noteWithoutDescription = aNote({ id: 'a', title: 'Idée A', description: null })
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteWithoutDescription])
+      repository.getById.mockResolvedValue(noteWithoutDescription)
+
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
+
+      fireEvent.click(screen.getByText('Idée A'))
+
+      expect(await within(preview()).findByText('Pas de description')).toBeDefined()
+    })
+
+    it('closes with a second click on the note', async () => {
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA])
+      repository.getById.mockResolvedValue(noteA)
+
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
+
+      fireEvent.click(screen.getByText('Idée A'))
+      await within(preview()).findByText('Sa description')
+      fireEvent.click(screen.getAllByText('Idée A')[0])
+
+      expect(screen.queryByRole('complementary', { name: "Aperçu de l'idée" })).toBeNull()
+    })
+
+    it('closes with a click on the background', async () => {
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA])
+      repository.getById.mockResolvedValue(noteA)
+
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
+
+      fireEvent.click(screen.getByText('Idée A'))
+      await within(preview()).findByText('Sa description')
+      // fireEvent: React Flow only counts a click on the background when the mouse did not move
+      const pane = document.querySelector('.react-flow__pane') as HTMLElement
+      fireEvent.click(pane)
+
+      expect(screen.queryByRole('complementary', { name: "Aperçu de l'idée" })).toBeNull()
+    })
+
+    it('switches to the other note with a click on it', async () => {
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA, noteB])
+      repository.getById.mockImplementation((id: string) => Promise.resolve(id === 'a' ? noteA : noteB))
+
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
+
+      fireEvent.click(screen.getByText('Idée A'))
+      expect(await within(preview()).findByRole('heading', { name: 'Idée A' })).toBeDefined()
+      fireEvent.click(screen.getByText('Idée B'))
+
+      expect(await within(preview()).findByRole('heading', { name: 'Idée B' })).toBeDefined()
+    })
+
+    it('does not open in selection mode, nor with Ctrl + click', async () => {
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA, noteB])
+
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
+
+      fireEvent.click(screen.getByText('Idée A'), { ctrlKey: true })
+      await userEvent.keyboard('s')
+      fireEvent.click(screen.getByText('Idée B'))
+
+      expect(screen.queryByRole('complementary', { name: "Aperçu de l'idée" })).toBeNull()
+      expect(repository.getById).not.toHaveBeenCalled()
+    })
+
+    it('edits the note, and the canvas shows the new title at once', async () => {
+      const edited = aNote({ id: 'a', title: 'Idée A modifiée' })
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA])
+      repository.getById.mockResolvedValue(noteA)
+      repository.update.mockResolvedValue(edited)
+
+      renderCanvas(repository)
+      await screen.findByText('Idée A')
+
+      fireEvent.click(screen.getByText('Idée A'))
+      await userEvent.click(await within(preview()).findByRole('button', { name: 'Modifier' }))
+      const title = within(preview()).getByLabelText(/Titre/)
+      await userEvent.clear(title)
+      await userEvent.type(title, 'Idée A modifiée')
+      await userEvent.click(within(preview()).getByRole('button', { name: 'Enregistrer' }))
+
+      expect(await within(preview()).findByRole('heading', { name: 'Idée A modifiée' })).toBeDefined()
+      expect(document.querySelector('.react-flow__node')?.textContent).toContain('Idée A modifiée')
+      expect(repository.update).toHaveBeenCalledExactlyOnceWith('a', { title: 'Idée A modifiée', description: 'Sa description' })
+    })
+
+    it('deletes the note after a confirmation, and closes', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const repository = createFakeNoteRepository()
+      repository.getAll.mockResolvedValue([noteA, noteB])
+      repository.getById.mockResolvedValue(noteB)
+      repository.delete.mockResolvedValue()
+
+      renderCanvas(repository)
+      await screen.findByText('Idée B')
+
+      fireEvent.click(screen.getByText('Idée B'))
+      await userEvent.click(await within(preview()).findByRole('button', { name: 'Supprimer' }))
+
+      await waitFor(() => expect(screen.queryByText('Idée B')).toBeNull())
+      expect(screen.queryByRole('complementary', { name: "Aperçu de l'idée" })).toBeNull()
+      expect(repository.delete).toHaveBeenCalledExactlyOnceWith('b')
+    })
   })
 
   it('deletes a note after a confirmation, and it disappears at once', async () => {

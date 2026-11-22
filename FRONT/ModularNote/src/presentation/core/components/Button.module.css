@@ -38,3 +38,14 @@
 .secondary:not(:disabled):hover {
   border-color: var(--color-text-muted);
 }
+
+.danger {
+  font-weight: 500;
+  color: var(--color-danger);
+  background: transparent;
+  border-color: var(--color-danger);
+}
+
+.danger:not(:disabled):hover {
+  background: var(--color-danger-soft);
+}

@@ -36,15 +36,11 @@ export type CanvasViewModel = {
 }
 
 /**
- * Nothing to close when a note is removed: the canvas only reads the cache, which is already updated
- */
-function ignoreRemovedNote(): void {}
-
-/**
  * ViewModel of the canvas: the positions are only computed here, nothing about them is saved
+ * @param onNoteRemoved - Called with the id of a note that has just been deleted, or that does not exist anymore
  * @returns The state of the canvas and the actions the view can call
  */
-export function useCanvasViewModel(): CanvasViewModel {
+export function useCanvasViewModel(onNoteRemoved: (id: string) => void): CanvasViewModel {
   const { getNotes, getLinks }: Dependencies = useDependencies()
   const notesQuery: UseQueryResult<Note[], Error> = useQuery({
     queryKey: noteQueryKeys.all,
@@ -54,7 +50,7 @@ export function useCanvasViewModel(): CanvasViewModel {
     queryKey: noteQueryKeys.allLinks,
     queryFn: ({ signal }: QueryFunctionContext): Promise<NoteLink[]> => getLinks.execute(signal),
   })
-  const deleteViewModel: DeleteNoteViewModel = useDeleteNoteViewModel(ignoreRemovedNote)
+  const deleteViewModel: DeleteNoteViewModel = useDeleteNoteViewModel(onNoteRemoved)
 
   const notes: Note[] = notesQuery.data ?? []
   const noteIds: Set<string> = new Set(notes.map((note: Note): string => note.id))

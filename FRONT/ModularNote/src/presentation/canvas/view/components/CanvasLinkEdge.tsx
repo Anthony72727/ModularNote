@@ -15,11 +15,12 @@ function toCenter(node: InternalNode<CanvasNoteNodeType>): { x: number; y: numbe
 }
 
 /**
- * Link on the canvas: a straight line between the centers of its two notes, so it follows them when they move
+ * Link on the canvas: a straight line between the centers of its two notes, so it follows them when they move; faded
+ * while a note is previewed and the link does not touch it
  * @param props - The edge given by React Flow
  * @returns The line, or nothing while its notes are not known yet
  */
-export function CanvasLinkEdge({ source, target }: EdgeProps<CanvasLinkEdgeType>): JSX.Element | null {
+export function CanvasLinkEdge({ source, target, data }: EdgeProps<CanvasLinkEdgeType>): JSX.Element | null {
   const sourceNode: InternalNode<CanvasNoteNodeType> | undefined = useInternalNode<CanvasNoteNodeType>(source)
   const targetNode: InternalNode<CanvasNoteNodeType> | undefined = useInternalNode<CanvasNoteNodeType>(target)
 
@@ -30,5 +31,5 @@ export function CanvasLinkEdge({ source, target }: EdgeProps<CanvasLinkEdgeType>
   const from: { x: number; y: number } = toCenter(sourceNode)
   const to: { x: number; y: number } = toCenter(targetNode)
 
-  return <BaseEdge path={`M${from.x} ${from.y} L${to.x} ${to.y}`} className={styles.link} interactionWidth={0} />
+  return <BaseEdge path={`M${from.x} ${from.y} L${to.x} ${to.y}`} className={data?.isFaded === true ? `${styles.link} ${styles.faded}` : styles.link} interactionWidth={0} />
 }

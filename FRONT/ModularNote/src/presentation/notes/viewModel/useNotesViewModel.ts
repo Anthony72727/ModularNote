@@ -1,40 +1,25 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { QueryFunctionContext, UseQueryResult } from '@tanstack/react-query'
 import type { Dependencies } from '../../../core/di/Dependencies'
 import { useDependencies } from '../../../core/di/DependenciesContext'
 import type { Note } from '../../../domain/notes/entity/models/Note'
-import { confirmDiscardChanges } from '../../core/util/confirmDiscardChanges'
 import { toNoteErrorMessage } from '../util/toNoteErrorMessage'
 import { noteQueryKeys } from './noteQueryKeys'
+import { useSelectedNoteViewModel } from './useSelectedNoteViewModel'
+import type { SelectedNoteViewModel } from './useSelectedNoteViewModel'
 
 /**
- * State and actions of the notes page
+ * State and actions of the notes page, the selected note included
  */
-export type NotesViewModel = {
+export type NotesViewModel = SelectedNoteViewModel & {
   /** Every note, newest first (empty while loading) */
   notes: Note[]
   /** True during the first loading of the notes */
   isLoading: boolean
   /** Message to show when the notes cannot be loaded, null otherwise */
   loadError: string | null
-  /** Note whose details are open, null when the panel is closed */
-  selectedNoteId: string | null
-  /** True when the edition of the selected note holds unsaved modifications */
-  hasUnsavedEdit: boolean
-  /** Tell whether the edition of the selected note holds unsaved modifications (receives the new state) */
-  changeHasUnsavedEdit: (value: boolean) => void
   /** Load the notes again after a failure */
   retry: () => void
-  /**
-   * Open the details of a note, or close them if this note is already open (receives the note's id);
-   * unsaved modifications of the selected note must be given up first
-   */
-  toggleNote: (id: string) => void
-  /** Close the details panel; unsaved modifications of the selected note must be given up first */
-  closeNote: () => void
-  /** Close the details of a note that does not exist anymore, without asking (receives the note's id) */
-  deselectNote: (id: string) => void
 }
 
 /**
@@ -43,8 +28,7 @@ export type NotesViewModel = {
  */
 export function useNotesViewModel(): NotesViewModel {
   const { getNotes }: Dependencies = useDependencies()
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
-  const [hasUnsavedEdit, setHasUnsavedEdit] = useState<boolean>(false)
+  const selectedNoteViewModel: SelectedNoteViewModel = useSelectedNoteViewModel()
 
   const notesQuery: UseQueryResult<Note[], Error> = useQuery({
     queryKey: noteQueryKeys.all,
@@ -59,34 +43,11 @@ export function useNotesViewModel(): NotesViewModel {
     void notesQuery.refetch()
   }
 
-  function toggleNote(id: string): void {
-    if (hasUnsavedEdit && !confirmDiscardChanges()) {
-      return
-    }
-    setSelectedNoteId((current: string | null): string | null => (current === id ? null : id))
-  }
-
-  function closeNote(): void {
-    if (hasUnsavedEdit && !confirmDiscardChanges()) {
-      return
-    }
-    setSelectedNoteId(null)
-  }
-
-  function deselectNote(id: string): void {
-    setSelectedNoteId((current: string | null): string | null => (current === id ? null : current))
-  }
-
   return {
+    ...selectedNoteViewModel,
     notes,
     isLoading: notesQuery.isPending,
     loadError: notesQuery.isError ? toNoteErrorMessage(notesQuery.error) : null,
-    selectedNoteId,
-    hasUnsavedEdit,
-    changeHasUnsavedEdit: setHasUnsavedEdit,
     retry,
-    toggleNote,
-    closeNote,
-    deselectNote,
   }
 }

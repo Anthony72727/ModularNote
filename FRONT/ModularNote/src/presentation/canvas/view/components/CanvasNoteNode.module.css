@@ -16,6 +16,26 @@
   cursor: grabbing;
 }
 
+/* Like the mockup: the previewed note in pink, the notes linked to it in turquoise */
+.previewed {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  box-shadow: var(--glow-accent);
+}
+
+.previewed .dot {
+  box-shadow: 0 0 10px var(--color-accent);
+}
+
+.linked {
+  border-color: var(--color-link-line);
+  background: var(--color-link-soft);
+}
+
+.linked .dot {
+  background: var(--color-link);
+}
+
 /* The second line of the frame is a shadow, so that the note keeps its size when it is selected */
 .selected {
   border-color: var(--color-accent);

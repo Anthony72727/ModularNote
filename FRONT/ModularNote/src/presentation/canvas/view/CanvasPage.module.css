@@ -1,6 +1,22 @@
 .page {
-  position: relative;
+  display: flex;
   height: 100%;
+}
+
+.surface {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .page {
+    flex-direction: column;
+  }
+
+  .surface {
+    min-height: 0;
+  }
 }
 
 .state {

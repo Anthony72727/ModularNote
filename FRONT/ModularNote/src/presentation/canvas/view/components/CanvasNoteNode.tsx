@@ -7,15 +7,23 @@ import styles from './CanvasNoteNode.module.css'
 
 /**
  * Note on the canvas: its title, its date, its number of links and a delete action, with a thicker and lighter
- * frame when it is selected
+ * frame when it is selected; pink when it is previewed, turquoise when it is linked to the previewed note
  * @param props - The node given by React Flow
  * @returns The block of the note
  */
 export function CanvasNoteNode({ data, selected }: NodeProps<CanvasNoteNodeType>): JSX.Element {
-  const { note, linkCount, isDeleting, onDelete } = data
+  const { note, linkCount, isDeleting, onDelete, highlight } = data
+  const classNames: string = [
+    styles.node,
+    highlight === 'previewed' && styles.previewed,
+    highlight === 'linked' && styles.linked,
+    selected === true && styles.selected,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <article className={selected ? `${styles.node} ${styles.selected}` : styles.node}>
+    <article className={classNames}>
       {/* React Flow needs handles to draw a link, even though the line goes from center to center */}
       <Handle type="target" position={Position.Top} isConnectable={false} className={styles.handle} />
       <span className={styles.dot} aria-hidden="true" />

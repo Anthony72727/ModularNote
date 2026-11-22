@@ -8,7 +8,7 @@ function aNode(id: string, x: number, title: string = 'Idée'): CanvasNoteNodeTy
     id,
     type: 'note',
     position: { x, y: 0 },
-    data: { note: aNote({ id, title }), linkCount: 0, isDeleting: false, onDelete: vi.fn() },
+    data: { note: aNote({ id, title }), linkCount: 0, isDeleting: false, onDelete: vi.fn(), highlight: 'none' },
   }
 }
 

@@ -16,7 +16,7 @@ function aNode(id: string, x: number, y: number, dragging: boolean = false): Can
     position: { x, y },
     dragging,
     measured: { width: WIDTH, height: HEIGHT },
-    data: { note: aNote({ id }), linkCount: 0, isDeleting: false, onDelete: vi.fn() },
+    data: { note: aNote({ id }), linkCount: 0, isDeleting: false, onDelete: vi.fn(), highlight: 'none' },
   }
 }
 

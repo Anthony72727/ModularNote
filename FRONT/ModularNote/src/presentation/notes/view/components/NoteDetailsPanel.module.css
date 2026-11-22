@@ -23,6 +23,41 @@
   }
 }
 
+/* Beside the canvas: full height on the right, like the "Aperçu" of the mockup */
+.side {
+  gap: 24px;
+  width: 340px;
+  max-height: none;
+  padding: 24px;
+  border-top: none;
+  border-left: 1px solid var(--color-border);
+  box-shadow: -10px 0 30px rgb(0 0 0 / 0.5);
+  animation-name: slide-in;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* On a narrow screen there is no room beside the canvas: the panel goes back under it */
+@media (max-width: 720px) {
+  .side {
+    width: auto;
+    max-height: 55%;
+    border-top: 1px solid var(--color-border);
+    border-left: none;
+    box-shadow: var(--shadow-panel);
+    animation-name: slide-up;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel {
     animation: none;
@@ -58,6 +93,45 @@
 
 .close:hover {
   color: var(--color-accent);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 0.6875rem/1rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.labelDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.side .header {
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.side .actions {
+  margin-top: auto;
+}
+
+.side .linksList {
+  flex-direction: column;
+}
+
+.side .linksList li {
+  padding: 10px 14px;
 }
 
 .date {

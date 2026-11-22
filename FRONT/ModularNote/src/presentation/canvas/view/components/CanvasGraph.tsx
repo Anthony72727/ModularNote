@@ -14,7 +14,7 @@ import { useCanvasSettlingViewModel } from '../../viewModel/useCanvasSettlingVie
 import type { CanvasSettlingViewModel } from '../../viewModel/useCanvasSettlingViewModel'
 import { CanvasBackground } from './CanvasBackground'
 import { CANVAS_FIT_VIEW_OPTIONS } from './canvasFitViewOptions'
-import type { CanvasLinkEdgeType, CanvasNoteNodeType } from './canvasGraphTypes'
+import type { CanvasLinkEdgeType, CanvasNoteHighlight, CanvasNoteNodeType } from './canvasGraphTypes'
 import { CanvasControls } from './CanvasControls'
 import { CanvasLinkEdge } from './CanvasLinkEdge'
 import { CanvasModeMenu } from './CanvasModeMenu'
@@ -38,6 +38,12 @@ type CanvasGraphProps = {
   isDeleting: boolean
   /** Called when the user asks to delete a note, with this note */
   onDelete: (note: Note) => void
+  /** Id of the note whose preview is open, null when none is */
+  previewedNoteId: string | null
+  /** Called with the id of a clicked note, to open its preview or close it if it is already open */
+  onTogglePreview: (id: string) => void
+  /** Called when the user clicks the background, to close the preview */
+  onClosePreview: () => void
 }
 
 /**
@@ -48,15 +54,44 @@ function countLinks(noteId: string, links: NoteLink[]): number {
 }
 
 /**
+ * How a note stands out: the previewed note, the notes linked to it, the others
+ */
+function toHighlight(noteId: string, previewedNoteId: string | null, links: NoteLink[]): CanvasNoteHighlight {
+  if (previewedNoteId === null) {
+    return 'none'
+  }
+  if (noteId === previewedNoteId) {
+    return 'previewed'
+  }
+  const isLinked: boolean = links.some(
+    (link: NoteLink): boolean =>
+      (link.noteAId === previewedNoteId && link.noteBId === noteId) ||
+      (link.noteBId === previewedNoteId && link.noteAId === noteId),
+  )
+  return isLinked ? 'linked' : 'none'
+}
+
+/**
  * The notes and their links on a surface that can be panned and zoomed. In move mode the notes can be dragged, and
  * they never overlap: the notes pushed aside slide around the dragged one, then go back to their place. Their position
  * lives here, in the memory of the page, and is forgotten when the page is left.
  * In selection mode, surrounding notes selects them; in any mode, Ctrl + click adds or removes a note from the
- * selection. The selected notes then move together, in move mode
- * @param props - The notes, their links and their positions
+ * selection. The selected notes then move together, in move mode.
+ * In navigation and move modes, a click on a note opens its preview; the previewed note and the notes and links around
+ * it stand out, and a click on the background closes it
+ * @param props - The notes, their links, their positions and the previewed note
  * @returns The surface
  */
-export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: CanvasGraphProps): JSX.Element {
+export function CanvasGraph({
+  notes,
+  links,
+  positions,
+  isDeleting,
+  onDelete,
+  previewedNoteId,
+  onTogglePreview,
+  onClosePreview,
+}: CanvasGraphProps): JSX.Element {
   const [currentNodes, setCurrentNodes] = useState<CanvasNoteNodeType[]>([])
   const [isSelectionFinishing, setIsSelectionFinishing] = useState<boolean>(false)
   const modeViewModel: CanvasModeViewModel = useCanvasModeViewModel()
@@ -68,7 +103,13 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       id: note.id,
       type: 'note',
       position: positions[note.id],
-      data: { note, linkCount: countLinks(note.id, links), isDeleting, onDelete },
+      data: {
+        note,
+        linkCount: countLinks(note.id, links),
+        isDeleting,
+        onDelete,
+        highlight: toHighlight(note.id, previewedNoteId, links),
+      },
     }),
   )
   const nodes: CanvasNoteNodeType[] = mergeCanvasNodes(computedNodes, currentNodes)
@@ -90,6 +131,9 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       type: 'link',
       source: link.noteAId,
       target: link.noteBId,
+      data: {
+        isFaded: previewedNoteId !== null && link.noteAId !== previewedNoteId && link.noteBId !== previewedNoteId,
+      },
     }),
   )
 
@@ -109,7 +153,15 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
         ),
       )
       setIsSelectionFinishing(true)
+    } else {
+      // The click that ends a drag of the note or of the surface is swallowed by d3: only a real click gets here
+      onTogglePreview(clicked.id)
     }
+  }
+
+  function handlePaneClick(): void {
+    clearSelection()
+    onClosePreview()
   }
 
   function handleNodesChange(changes: NodeChange<CanvasNoteNodeType>[]): void {
@@ -132,7 +184,7 @@ export function CanvasGraph({ notes, links, positions, isDeleting, onDelete }: C
       onNodeDragStop={(_event: unknown, _node: CanvasNoteNodeType, dropped: CanvasNoteNodeType[]): void =>
         settlingViewModel.stopDrag(dropped)
       }
-      onPaneClick={clearSelection}
+      onPaneClick={handlePaneClick}
       fitView
       fitViewOptions={CANVAS_FIT_VIEW_OPTIONS}
       minZoom={0.1}

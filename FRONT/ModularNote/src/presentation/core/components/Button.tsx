@@ -2,9 +2,9 @@ import type { ButtonHTMLAttributes, JSX } from 'react'
 import styles from './Button.module.css'
 
 /**
- * Look of a button: primary for the main action, secondary for the others
+ * Look of a button: primary for the main action, secondary for the others, danger for an action that destroys data
  */
-type ButtonVariant = 'primary' | 'secondary'
+type ButtonVariant = 'primary' | 'secondary' | 'danger'
 
 /**
  * Props of Button: every attribute of a native button, plus its look
