@@ -38,5 +38,13 @@ namespace Infrastructure.Repositories
                 .OrderBy(n => n.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
+
+        /// <inheritdoc/>
+        public async Task<List<NoteLink>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.NoteLinks
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
     }
 }

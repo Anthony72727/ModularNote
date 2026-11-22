@@ -1,0 +1,100 @@
+/* React Flow turns off the mouse on a note that cannot be dragged: the delete action must stay available */
+.node {
+  pointer-events: auto;
+  position: relative;
+  width: 210px;
+  padding: 12px 36px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-floating);
+  color: var(--color-text);
+  cursor: grab;
+}
+
+.node:active {
+  cursor: grabbing;
+}
+
+/* The second line of the frame is a shadow, so that the note keeps its size when it is selected */
+.selected {
+  border-color: var(--color-accent);
+  background: var(--color-surface-muted);
+  box-shadow: 0 0 0 1px var(--color-accent), var(--shadow-floating);
+}
+
+.dot {
+  position: absolute;
+  top: 17px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.title {
+  font: 600 0.875rem/1.125rem var(--font-display);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin-top: 4px;
+  font: 400 0.75rem/1rem var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-danger);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.delete svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.node:hover .delete,
+.delete:focus-visible {
+  opacity: 1;
+}
+
+.delete:hover {
+  background: var(--color-danger-soft);
+}
+
+.delete:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* On a touch screen there is no hover to reveal the action */
+@media (hover: none) {
+  .delete {
+    opacity: 1;
+  }
+}
+
+.handle {
+  opacity: 0;
+  pointer-events: none;
+}

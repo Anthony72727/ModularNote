@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { JSX, ReactNode } from 'react'
 import { AddNoteUseCaseImpl } from '../../domain/notes/interactors/AddNoteUseCaseImpl'
 import { DeleteNoteUseCaseImpl } from '../../domain/notes/interactors/DeleteNoteUseCaseImpl'
+import { GetLinksUseCaseImpl } from '../../domain/notes/interactors/GetLinksUseCaseImpl'
 import { GetNoteByIdUseCaseImpl } from '../../domain/notes/interactors/GetNoteByIdUseCaseImpl'
 import { GetNoteLinksUseCaseImpl } from '../../domain/notes/interactors/GetNoteLinksUseCaseImpl'
 import { GetNotesUseCaseImpl } from '../../domain/notes/interactors/GetNotesUseCaseImpl'
@@ -34,6 +35,7 @@ export function createTestContext(noteRepository: NoteRepository): TestContext {
     getNotes: new GetNotesUseCaseImpl(noteRepository),
     getNoteById: new GetNoteByIdUseCaseImpl(noteRepository),
     getNoteLinks: new GetNoteLinksUseCaseImpl(noteRepository),
+    getLinks: new GetLinksUseCaseImpl(noteRepository),
     addNote: new AddNoteUseCaseImpl(noteRepository),
     updateNote: new UpdateNoteUseCaseImpl(noteRepository),
     deleteNote: new DeleteNoteUseCaseImpl(noteRepository),

@@ -22,5 +22,10 @@ namespace ModularNoteUnitTest.Application.Fakes
         {
             return Task.FromResult(LinkedNotes.ToList());
         }
+
+        public Task<List<NoteLink>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Links.ToList());
+        }
     }
 }

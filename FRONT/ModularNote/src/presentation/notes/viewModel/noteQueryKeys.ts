@@ -6,7 +6,7 @@ type NoteQueryKeys = {
   all: readonly ['notes']
   /** Key of a single note (receives the note's id) */
   detail: (id: string) => readonly ['notes', 'detail', string]
-  /** Prefix of the keys of the linked notes of every note */
+  /** Key of every link, and prefix of the keys of the linked notes of every note */
   allLinks: readonly ['notes', 'links']
   /** Key of the notes linked to a note (receives the note's id) */
   links: (id: string) => readonly ['notes', 'links', string]

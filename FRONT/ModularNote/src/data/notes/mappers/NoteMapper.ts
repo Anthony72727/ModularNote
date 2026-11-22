@@ -1,6 +1,8 @@
 import type { NewNote, Note } from '../../../domain/notes/entity/models/Note'
+import type { NoteLink } from '../../../domain/notes/entity/models/NoteLink'
 import type { AddNoteRequestDto } from '../dtos/AddNoteRequestDto'
 import type { NoteDto } from '../dtos/NoteDto'
+import type { NoteLinkDto } from '../dtos/NoteLinkDto'
 import type { UpdateNoteRequestDto } from '../dtos/UpdateNoteRequestDto'
 
 /**
@@ -14,6 +16,19 @@ export function toNote(dto: NoteDto): Note {
     title: dto.title,
     description: dto.description,
     createdAt: new Date(dto.createdAt),
+  }
+}
+
+/**
+ * Convert a link sent by the API into a link of the domain
+ * @param dto - Link as sent by the API
+ * @returns The link of the domain
+ */
+export function toNoteLink(dto: NoteLinkDto): NoteLink {
+  return {
+    id: dto.id,
+    noteAId: dto.noteAId,
+    noteBId: dto.noteBId,
   }
 }
 

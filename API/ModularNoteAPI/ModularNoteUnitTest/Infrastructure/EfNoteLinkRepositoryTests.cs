@@ -68,6 +68,27 @@ namespace ModularNoteUnitTest.Infrastructure
         }
 
         [Fact]
+        public async Task GetAllAsync_ReturnsEveryLink()
+        {
+            var first = Note.Create("Première", null);
+            var second = Note.Create("Seconde", null);
+            var third = Note.Create("Troisième", null);
+            await SeedAsync(first, second, third);
+            var firstLink = NoteLink.Create(first.Id, second.Id);
+            var secondLink = NoteLink.Create(third.Id, second.Id);
+            using (var dbContext = _database.CreateDbContext())
+            {
+                await new EfNoteLinkRepository(dbContext).AddRangeAsync(new[] { firstLink, secondLink });
+            }
+
+            using var readContext = _database.CreateDbContext();
+            var links = await new EfNoteLinkRepository(readContext).GetAllAsync();
+
+            Assert.Equal(new[] { firstLink.Id, secondLink.Id }.Order(), links.Select(l => l.Id).Order());
+            Assert.Empty(readContext.ChangeTracker.Entries());
+        }
+
+        [Fact]
         public async Task AddRangeAsync_SameLinkInTheOtherDirection_IsRefusedByTheDatabase()
         {
             var first = Note.Create("Première", null);

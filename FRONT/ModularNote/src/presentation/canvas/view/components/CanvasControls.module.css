@@ -1,0 +1,53 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+.zoomButton,
+.recenter {
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.zoomButton {
+  width: 36px;
+  font: 500 1.125rem/1 var(--font-sans);
+}
+
+.recenter {
+  padding: 0 14px;
+  font: 500 0.8125rem/1.25rem var(--font-sans);
+}
+
+.zoomButton:hover,
+.recenter:hover {
+  background: var(--color-surface-muted);
+}
+
+.zoomButton:focus-visible,
+.recenter:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.zoom {
+  min-width: 52px;
+  text-align: center;
+  font: 400 0.75rem/1rem var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.separator {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border);
+}

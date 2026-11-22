@@ -1,0 +1,30 @@
+.page {
+  position: relative;
+  height: 100%;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+}
+
+.addLink {
+  color: var(--color-link);
+}
+
+.error {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 10;
+  transform: translateX(-50%);
+  width: min(480px, calc(100% - 32px));
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
